@@ -95,4 +95,9 @@ class Activity extends Model
     {
         return $this->hasMany(Favorite::class);
     }
+
+    public function scopeLive($query)
+    {
+        return $query->where('status', 'live')->whereNotNull('published_at');
+    }
 }

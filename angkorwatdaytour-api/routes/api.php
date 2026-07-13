@@ -7,6 +7,10 @@ use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\LogoutController;
 use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\Auth\ResetPasswordController;
+use App\Http\Controllers\Api\Public\ActivityController as PublicActivityController;
+use App\Http\Controllers\Api\Public\CategoryController as PublicCategoryController;
+use App\Http\Controllers\Api\Public\CityController as PublicCityController;
+use App\Http\Controllers\Api\Public\SearchController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -63,4 +67,27 @@ Route::middleware(['auth:sanctum', 'role:provider'])->prefix('provider')->group(
 
 Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/dashboard', fn () => response()->json(['message' => 'Admin dashboard']))->name('admin.dashboard');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Public browsing routes
+|--------------------------------------------------------------------------
+|
+| Unauthenticated endpoints for the Expo mobile app and marketing website
+| to list/search activities, categories, and cities.
+|
+*/
+
+Route::prefix('public')->group(function () {
+    Route::get('/activities', [PublicActivityController::class, 'index'])->name('public.activities.index');
+    Route::get('/activities/{slug}', [PublicActivityController::class, 'show'])->name('public.activities.show');
+
+    Route::get('/categories', [PublicCategoryController::class, 'index'])->name('public.categories.index');
+    Route::get('/categories/{slug}', [PublicCategoryController::class, 'show'])->name('public.categories.show');
+
+    Route::get('/cities', [PublicCityController::class, 'index'])->name('public.cities.index');
+    Route::get('/cities/{slug}', [PublicCityController::class, 'show'])->name('public.cities.show');
+
+    Route::get('/search', [SearchController::class, 'index'])->name('public.search');
 });
