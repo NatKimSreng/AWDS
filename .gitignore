@@ -21,6 +21,10 @@ dist/
 build/
 .expo/
 .expo-shared/
+
+# Claude / worktrees
+.claude/
+
 *.ipa
 *.apk
 *.aab
