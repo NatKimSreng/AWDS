@@ -1,31 +1,40 @@
-import { StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+import { useAuthStore } from '@/stores/authStore';
+import { logout } from '@/lib/authApi';
 
-export default function TabOneScreen() {
+export default function HomeScreen() {
+  const { user, clearAuth } = useAuthStore((state) => ({
+    user: state.user,
+    clearAuth: state.clearAuth,
+  }));
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      await clearAuth();
+    }
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
-    </View>
+    <SafeAreaView className="flex-1 bg-sand-bg px-6 justify-center">
+      <View className="bg-white rounded-2xl p-6 shadow-sm">
+        <Text className="font-heading text-2xl text-stone-charcoal mb-2">
+          Welcome, {user?.name ?? 'Guest'}
+        </Text>
+        <Text className="font-body text-stone-gray mb-6">
+          {user?.email ?? 'Not signed in'}
+        </Text>
+
+        <TouchableOpacity
+          onPress={handleLogout}
+          className="rounded-xl bg-angkor-orange py-3.5 items-center active:bg-angkor-orange-dark"
+        >
+          <Text className="font-body text-base font-semibold text-white">Log out</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
-});
