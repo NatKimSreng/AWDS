@@ -16,6 +16,7 @@ class Provider extends Model
         'bio',
         'service_area',
         'verification_status',
+        'onboarding_status',
         'id_document_url',
         'license_document_url',
         'avg_rating',

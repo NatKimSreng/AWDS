@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\AiChatController;
 use App\Http\Controllers\Api\MessageThreadController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\ProviderOnboardingController;
 use App\Http\Controllers\Api\Public\ActivityController as PublicActivityController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\TicketController;
@@ -131,6 +132,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/ai/conversations/{conversation}/escalate', [AiChatController::class, 'escalate'])
         ->whereNumber('conversation')
         ->name('ai.conversations.escalate');
+
+    Route::get('/provider/onboarding', [ProviderOnboardingController::class, 'show'])->name('provider.onboarding.show');
+    Route::post('/provider/onboarding/business', [ProviderOnboardingController::class, 'saveBusiness'])->name('provider.onboarding.business');
+    Route::post('/provider/onboarding/documents', [ProviderOnboardingController::class, 'saveDocuments'])->name('provider.onboarding.documents');
+    Route::post('/provider/onboarding/payout', [ProviderOnboardingController::class, 'savePayout'])->name('provider.onboarding.payout');
+    Route::post('/provider/onboarding/submit', [ProviderOnboardingController::class, 'submit'])->name('provider.onboarding.submit');
 });
 
 Route::post('/payments/khqr/webhook', [PaymentController::class, 'khqrWebhook'])
