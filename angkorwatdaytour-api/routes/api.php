@@ -7,7 +7,9 @@ use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\LogoutController;
 use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\Auth\ResetPasswordController;
+use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\Public\ActivityController as PublicActivityController;
+use App\Http\Controllers\Api\Public\AvailabilityController as PublicAvailabilityController;
 use App\Http\Controllers\Api\Public\CategoryController as PublicCategoryController;
 use App\Http\Controllers\Api\Public\CityController as PublicCityController;
 use App\Http\Controllers\Api\Public\ExchangeRateController;
@@ -51,6 +53,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/user', function (\Illuminate\Http\Request $request) {
         return $request->user();
     })->name('user.show');
+
+    Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
 });
 
 /*
@@ -84,6 +88,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
 Route::prefix('public')->group(function () {
     Route::get('/activities', [PublicActivityController::class, 'index'])->name('public.activities.index');
     Route::get('/activities/{slug}', [PublicActivityController::class, 'show'])->name('public.activities.show');
+    Route::get('/activities/{slug}/availability', [PublicAvailabilityController::class, 'show'])->name('public.activities.availability');
 
     Route::get('/categories', [PublicCategoryController::class, 'index'])->name('public.categories.index');
     Route::get('/categories/{slug}', [PublicCategoryController::class, 'show'])->name('public.categories.show');
