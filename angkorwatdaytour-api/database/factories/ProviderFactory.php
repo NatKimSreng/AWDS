@@ -39,6 +39,16 @@ class ProviderFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'verification_status' => 'approved',
+            'onboarding_status' => 'approved',
+            'approved_at' => now(),
+        ]);
+    }
+
+    public function onboardingApproved(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'verification_status' => 'approved',
+            'onboarding_status' => 'approved',
             'approved_at' => now(),
         ]);
     }

@@ -24,6 +24,12 @@ use App\Http\Controllers\Api\Public\ExchangeRateController;
 use App\Http\Controllers\Api\Public\ProviderController as PublicProviderController;
 use App\Http\Controllers\Api\Public\SearchController;
 use App\Http\Controllers\Api\Public\SettingsController;
+use App\Http\Controllers\Api\Vendor\BookingController as VendorBookingController;
+use App\Http\Controllers\Api\Vendor\DashboardController as VendorDashboardController;
+use App\Http\Controllers\Api\Vendor\EarningController as VendorEarningController;
+use App\Http\Controllers\Api\Vendor\ListingController as VendorListingController;
+use App\Http\Controllers\Api\Vendor\SettingController as VendorSettingController;
+use App\Http\Controllers\Api\Vendor\TimeSlotController as VendorTimeSlotController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -153,8 +159,31 @@ Route::post('/payments/khqr/webhook', [PaymentController::class, 'khqrWebhook'])
 |
 */
 
-Route::middleware(['auth:sanctum', 'role:provider'])->prefix('provider')->group(function () {
-    Route::get('/dashboard', fn () => response()->json(['message' => 'Provider dashboard']))->name('provider.dashboard');
+Route::middleware(['auth:sanctum', 'role:provider', 'approved_provider'])->prefix('vendor')->group(function () {
+    Route::get('/dashboard', [VendorDashboardController::class, 'index'])->name('vendor.dashboard');
+
+    Route::get('/listings', [VendorListingController::class, 'index'])->name('vendor.listings.index');
+    Route::post('/listings', [VendorListingController::class, 'store'])->name('vendor.listings.store');
+    Route::get('/listings/{listing}', [VendorListingController::class, 'show'])->whereNumber('listing')->name('vendor.listings.show');
+    Route::put('/listings/{listing}', [VendorListingController::class, 'update'])->whereNumber('listing')->name('vendor.listings.update');
+    Route::delete('/listings/{listing}', [VendorListingController::class, 'destroy'])->whereNumber('listing')->name('vendor.listings.destroy');
+
+    Route::get('/listings/{listing}/slots', [VendorTimeSlotController::class, 'index'])->whereNumber('listing')->name('vendor.listings.slots.index');
+    Route::post('/listings/{listing}/slots', [VendorTimeSlotController::class, 'store'])->whereNumber('listing')->name('vendor.listings.slots.store');
+    Route::post('/listings/{listing}/slots/bulk', [VendorTimeSlotController::class, 'bulkStore'])->whereNumber('listing')->name('vendor.listings.slots.bulk');
+    Route::put('/listings/{listing}/slots/{slot}', [VendorTimeSlotController::class, 'update'])->whereNumber('listing')->whereNumber('slot')->name('vendor.listings.slots.update');
+    Route::delete('/listings/{listing}/slots/{slot}', [VendorTimeSlotController::class, 'destroy'])->whereNumber('listing')->whereNumber('slot')->name('vendor.listings.slots.destroy');
+
+    Route::get('/bookings', [VendorBookingController::class, 'index'])->name('vendor.bookings.index');
+    Route::get('/bookings/{booking}', [VendorBookingController::class, 'show'])->whereNumber('booking')->name('vendor.bookings.show');
+    Route::post('/bookings/{booking}/status', [VendorBookingController::class, 'updateStatus'])->whereNumber('booking')->name('vendor.bookings.status');
+
+    Route::get('/earnings', [VendorEarningController::class, 'index'])->name('vendor.earnings.index');
+    Route::get('/payouts', [VendorEarningController::class, 'payouts'])->name('vendor.payouts.index');
+
+    Route::get('/settings', [VendorSettingController::class, 'show'])->name('vendor.settings.show');
+    Route::put('/settings', [VendorSettingController::class, 'update'])->name('vendor.settings.update');
+    Route::put('/settings/payout', [VendorSettingController::class, 'updatePayout'])->name('vendor.settings.payout.update');
 });
 
 Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {

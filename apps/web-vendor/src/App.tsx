@@ -1,23 +1,35 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import { useAuthStore } from './stores/authStore';
+import DashboardLayout from './components/DashboardLayout';
 import LoginPage from './pages/LoginPage';
 import OnboardingPage from './pages/OnboardingPage';
+import DashboardPage from './pages/DashboardPage';
+import ListingsPage from './pages/ListingsPage';
+import ListingFormPage from './pages/ListingFormPage';
+import CalendarPage from './pages/CalendarPage';
+import BookingsPage from './pages/BookingsPage';
+import EarningsPage from './pages/EarningsPage';
+import SettingsPage from './pages/SettingsPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)();
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
-function HomeRoute() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-sand-bg p-6">
-      <div className="max-w-md w-full bg-card-white rounded-xl shadow-lg p-8 text-center">
-        <h1 className="text-2xl font-bold text-stone-charcoal mb-2">AngkorWatDayTour Vendor Dashboard</h1>
-        <p className="text-stone-gray">Your provider dashboard will appear here once onboarding is approved.</p>
-      </div>
-    </div>
-  );
+function ApprovedProviderRoute({ children }: { children: React.ReactNode }) {
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (user?.role !== 'provider') {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
 }
 
 function App() {
@@ -36,14 +48,23 @@ function App() {
         <Route
           path="/"
           element={
-            <ProtectedRoute>
-              <HomeRoute />
-            </ProtectedRoute>
+            <ApprovedProviderRoute>
+              <DashboardLayout />
+            </ApprovedProviderRoute>
           }
-        />
+        >
+          <Route index element={<DashboardPage />} />
+          <Route path="listings" element={<ListingsPage />} />
+          <Route path="listings/new" element={<ListingFormPage />} />
+          <Route path="listings/:id/edit" element={<ListingFormPage />} />
+          <Route path="calendar" element={<CalendarPage />} />
+          <Route path="bookings" element={<BookingsPage />} />
+          <Route path="earnings" element={<EarningsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );
 }
 
-export default App
+export default App;
