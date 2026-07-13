@@ -55,6 +55,46 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class);
     }
 
+    public function provider()
+    {
+        return $this->hasOne(Provider::class);
+    }
+
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class);
+    }
+
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    public function supportTickets()
+    {
+        return $this->hasMany(SupportTicket::class);
+    }
+
+    public function blogPosts()
+    {
+        return $this->hasMany(BlogPost::class, 'author_id');
+    }
+
+    public function messageThreadsAsCustomer()
+    {
+        return $this->hasMany(MessageThread::class, 'customer_id');
+    }
+
     public function hasRole(string ...$roles): bool
     {
         return $this->role && in_array($this->role->name, $roles, true);
