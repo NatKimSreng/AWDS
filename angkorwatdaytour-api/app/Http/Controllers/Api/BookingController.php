@@ -17,6 +17,30 @@ class BookingController extends Controller
 {
     private const PAYMENT_TTL_MINUTES = 15;
 
+    public function index(Request $request): JsonResponse
+    {
+        $bookings = $request->user()
+            ->bookings()
+            ->with(['activity', 'activity.provider', 'activity.heroImage', 'timeSlot'])
+            ->orderByDesc('created_at')
+            ->paginate(20);
+
+        return response()->json($bookings);
+    }
+
+    public function show(Request $request, Booking $booking): JsonResponse
+    {
+        if ($request->user()->id !== $booking->user_id) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        $booking->loadMissing(['activity', 'activity.provider', 'activity.heroImage', 'timeSlot', 'ticket']);
+
+        return response()->json([
+            'data' => $booking,
+        ]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([

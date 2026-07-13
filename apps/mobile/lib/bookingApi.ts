@@ -113,3 +113,93 @@ export async function sendConfirmationEmail(bookingId: number): Promise<void> {
     method: 'POST',
   });
 }
+
+export interface BookingListItem {
+  id: number;
+  booking_ref: string;
+  status: string;
+  total_price: string;
+  currency: string;
+  traveler_count: number;
+  booking_date: string;
+  booking_time: string;
+  created_at: string;
+  cancelled_at: string | null;
+  activity: {
+    id: number;
+    title: string;
+    slug: string;
+    hero_image?: {
+      image_url: string;
+      alt_text: string | null;
+    } | null;
+  } | null;
+  time_slot: {
+    id: number;
+    date: string;
+    start_time: string;
+  } | null;
+}
+
+export interface MyBookingsResponse {
+  data: BookingListItem[];
+  current_page: number;
+  last_page: number;
+}
+
+export async function fetchMyBookings(page = 1): Promise<MyBookingsResponse> {
+  const response = await apiFetch(`/bookings?page=${page}`);
+  return response as MyBookingsResponse;
+}
+
+export async function fetchBooking(bookingId: number): Promise<{ data: BookingListItem }> {
+  const response = await apiFetch(`/bookings/${bookingId}`);
+  return response as { data: BookingListItem };
+}
+
+export interface CancellationPreviewResponse {
+  can_cancel: boolean;
+  refund_amount: number;
+  refund_eligible: boolean;
+  refund_policy: string;
+  starts_at: string | null;
+  cutoff_at: string | null;
+  reason_required: boolean;
+  message: string;
+}
+
+export async function fetchCancellationPreview(bookingId: number): Promise<CancellationPreviewResponse> {
+  const response = await apiFetch(`/bookings/${bookingId}/cancellation-preview`);
+  return (response as { data: CancellationPreviewResponse }).data;
+}
+
+export interface CancellationResponse {
+  message: string;
+  data: {
+    booking: {
+      id: number;
+      booking_ref: string;
+      status: string;
+      cancelled_at: string | null;
+    };
+    refund: {
+      id: number;
+      amount: number;
+      currency: string;
+      status: string;
+    } | null;
+    preview: CancellationPreviewResponse;
+  };
+}
+
+export async function cancelBooking(
+  bookingId: number,
+  reason?: string
+): Promise<CancellationResponse> {
+  const response = await apiFetch(`/bookings/${bookingId}/cancel`, {
+    method: 'POST',
+    body: JSON.stringify({ reason }),
+  });
+
+  return response as CancellationResponse;
+}

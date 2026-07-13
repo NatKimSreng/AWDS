@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\LogoutController;
 use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\Auth\ResetPasswordController;
+use App\Http\Controllers\Api\BookingCancellationController;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\Public\ActivityController as PublicActivityController;
@@ -57,6 +58,20 @@ Route::middleware(['auth:sanctum'])->group(function () {
     })->name('user.show');
 
     Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
+
+    Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
+
+    Route::get('/bookings/{booking}', [BookingController::class, 'show'])
+        ->whereNumber('booking')
+        ->name('bookings.show');
+
+    Route::get('/bookings/{booking}/cancellation-preview', [BookingCancellationController::class, 'preview'])
+        ->whereNumber('booking')
+        ->name('bookings.cancellation.preview');
+
+    Route::post('/bookings/{booking}/cancel', [BookingCancellationController::class, 'cancel'])
+        ->whereNumber('booking')
+        ->name('bookings.cancellation.cancel');
 
     Route::post('/bookings/{booking}/payments/khqr', [PaymentController::class, 'khqr'])
         ->whereNumber('booking')
