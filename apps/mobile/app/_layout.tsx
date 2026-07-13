@@ -10,7 +10,9 @@ import '../global.css';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import { queryClient } from '@/constants/queryClient';
+import { fetchSettings } from '@/lib/settingsApi';
 import { useAuthStore } from '@/stores/authStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -78,6 +80,33 @@ export default function RootLayout() {
   return <RootLayoutNav />;
 }
 
+function SettingsLoader() {
+  const { setAvailableCurrencies, setAvailableLanguages } = useSettingsStore((state) => ({
+    setAvailableCurrencies: state.setAvailableCurrencies,
+    setAvailableLanguages: state.setAvailableLanguages,
+  }));
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchSettings()
+      .then((settings) => {
+        if (cancelled) return;
+        setAvailableCurrencies(settings.currencies as never);
+        setAvailableLanguages(settings.languages as never);
+      })
+      .catch(() => {
+        // Fail silently; defaults remain USD/en.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [setAvailableCurrencies, setAvailableLanguages]);
+
+  return null;
+}
+
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const isRestoring = useProtectedRoute();
@@ -87,18 +116,21 @@ function RootLayoutNav() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="search" options={{ headerShown: false }} />
-          <Stack.Screen name="category/[slug]" options={{ headerShown: false }} />
-          <Stack.Screen name="activity/[slug]" options={{ headerShown: false }} />
-          <Stack.Screen name="provider/[id]" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-        </Stack>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <>
+      <SettingsLoader />
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="search" options={{ headerShown: false }} />
+            <Stack.Screen name="category/[slug]" options={{ headerShown: false }} />
+            <Stack.Screen name="activity/[slug]" options={{ headerShown: false }} />
+            <Stack.Screen name="provider/[id]" options={{ headerShown: false }} />
+            <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+          </Stack>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </>
   );
 }

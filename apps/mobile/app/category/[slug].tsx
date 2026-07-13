@@ -12,8 +12,16 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useQuery } from '@tanstack/react-query';
 
 import { fetchCategories, fetchActivities, type ActivityCard } from '@/lib/publicApi';
+import { formatPrice } from '@/lib/formatCurrency';
+import { useSettingsStore } from '@/stores/settingsStore';
 
-function ActivityCardItem({ activity }: { activity: ActivityCard }) {
+function ActivityCardItem({
+  activity,
+  currency,
+}: {
+  activity: ActivityCard;
+  currency: 'USD' | 'KHR';
+}) {
   return (
     <Pressable
       onPress={() => router.push(`/activity/${activity.slug}`)}
@@ -32,7 +40,7 @@ function ActivityCardItem({ activity }: { activity: ActivityCard }) {
             </Text>
           </View>
           <Text className="font-body text-angkor-orange font-semibold">
-            ${activity.base_price_usd}
+            {formatPrice(activity.base_price_usd, currency)}
           </Text>
         </View>
       </View>
@@ -42,6 +50,7 @@ function ActivityCardItem({ activity }: { activity: ActivityCard }) {
 
 export default function CategoryScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
+  const currency = useSettingsStore((state) => state.currency);
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
@@ -74,7 +83,7 @@ export default function CategoryScreen() {
       ) : (
         <FlatList
           data={activitiesPage?.data ?? []}
-          renderItem={({ item }) => <ActivityCardItem activity={item} />}
+          renderItem={({ item }) => <ActivityCardItem activity={item} currency={currency} />}
           keyExtractor={(item) => `activity-${item.id}`}
           contentContainerStyle={{ padding: 16, paddingTop: 0 }}
           ListEmptyComponent={

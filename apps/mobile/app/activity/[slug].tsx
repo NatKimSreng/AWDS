@@ -12,9 +12,12 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useQuery } from '@tanstack/react-query';
 
 import { fetchActivity } from '@/lib/publicApi';
+import { formatPrice } from '@/lib/formatCurrency';
+import { useSettingsStore } from '@/stores/settingsStore';
 
 export default function ActivityDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
+  const currency = useSettingsStore((state) => state.currency);
 
   const { data: activity, isLoading } = useQuery({
     queryKey: ['activity', slug],
@@ -118,7 +121,7 @@ export default function ActivityDetailScreen() {
         <View>
           <Text className="font-body text-stone-gray text-sm">From</Text>
           <Text className="font-heading text-xl text-angkor-orange">
-            ${activity.base_price_usd as string}
+            {formatPrice(activity.base_price_usd as string, currency)}
           </Text>
         </View>
         <Pressable className="bg-angkor-orange rounded-xl px-6 py-3 active:bg-angkor-orange-dark">

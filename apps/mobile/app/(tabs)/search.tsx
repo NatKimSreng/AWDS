@@ -13,6 +13,8 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useQuery } from '@tanstack/react-query';
 
 import { apiFetch } from '@/lib/api';
+import { formatPrice } from '@/lib/formatCurrency';
+import { useSettingsStore } from '@/stores/settingsStore';
 
 interface SearchResult {
   activities: Array<{
@@ -40,6 +42,8 @@ export default function SearchScreen() {
     staleTime: 1000 * 60,
   });
 
+  const currency = useSettingsStore((state) => state.currency);
+
   const renderActivity = useCallback(
     ({ item }: { item: SearchResult['activities'][0] }) => (
       <Pressable
@@ -54,7 +58,7 @@ export default function SearchScreen() {
             {item.title}
           </Text>
           <Text className="font-body text-angkor-orange text-sm">
-            ${item.base_price_usd}
+            {formatPrice(item.base_price_usd, currency)}
           </Text>
         </View>
         <FontAwesome name="chevron-right" size={14} color="#6B635C" />

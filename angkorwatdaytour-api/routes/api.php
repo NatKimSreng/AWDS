@@ -10,7 +10,9 @@ use App\Http\Controllers\Api\Auth\ResetPasswordController;
 use App\Http\Controllers\Api\Public\ActivityController as PublicActivityController;
 use App\Http\Controllers\Api\Public\CategoryController as PublicCategoryController;
 use App\Http\Controllers\Api\Public\CityController as PublicCityController;
+use App\Http\Controllers\Api\Public\ExchangeRateController;
 use App\Http\Controllers\Api\Public\SearchController;
+use App\Http\Controllers\Api\Public\SettingsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -90,4 +92,7 @@ Route::prefix('public')->group(function () {
     Route::get('/cities/{slug}', [PublicCityController::class, 'show'])->name('public.cities.show');
 
     Route::get('/search', [SearchController::class, 'index'])->name('public.search');
+
+    Route::get('/settings', [SettingsController::class, 'index'])->name('public.settings');
+    Route::post('/exchange/convert', [ExchangeRateController::class, 'convert'])->name('public.exchange.convert');
 });

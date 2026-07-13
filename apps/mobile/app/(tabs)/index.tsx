@@ -13,8 +13,17 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useQuery } from '@tanstack/react-query';
 
 import { fetchCategories, fetchCities, fetchActivities, type ActivityCard } from '@/lib/publicApi';
+import { useSettingsStore } from '@/stores/settingsStore';
+import { formatPrice } from '@/lib/formatCurrency';
+import { CurrencyToggle } from '@/components/CurrencyToggle';
 
-function ActivityCardItem({ activity }: { activity: ActivityCard }) {
+function ActivityCardItem({
+  activity,
+  currency,
+}: {
+  activity: ActivityCard;
+  currency: 'USD' | 'KHR';
+}) {
   return (
     <Pressable
       onPress={() => router.push(`/activity/${activity.slug}`)}
@@ -49,7 +58,7 @@ function ActivityCardItem({ activity }: { activity: ActivityCard }) {
             </Text>
           </View>
           <Text className="font-body text-angkor-orange font-semibold">
-            ${activity.base_price_usd}
+            {formatPrice(activity.base_price_usd, currency)}
           </Text>
         </View>
       </View>
@@ -117,9 +126,11 @@ export default function HomeScreen() {
     []
   );
 
+  const currency = useSettingsStore((state) => state.currency);
+
   const renderActivity = useCallback(
-    ({ item }: { item: ActivityCard }) => <ActivityCardItem activity={item} />,
-    []
+    ({ item }: { item: ActivityCard }) => <ActivityCardItem activity={item} currency={currency} />,
+    [currency]
   );
 
   if (isLoading) {
@@ -142,9 +153,14 @@ export default function HomeScreen() {
           <View className="mb-4">
             <View className="flex-row items-center justify-between mb-4">
               <Text className="font-heading text-2xl text-stone-charcoal">Explore Angkor</Text>
-              <Pressable onPress={() => router.push('/search')}>
-                <FontAwesome name="search" size={22} color="#C8530A" />
-              </Pressable>
+              <View className="flex-row items-center">
+                <View className="w-24 mr-3">
+                  <CurrencyToggle />
+                </View>
+                <Pressable onPress={() => router.push('/search')}>
+                  <FontAwesome name="search" size={22} color="#C8530A" />
+                </Pressable>
+              </View>
             </View>
 
             {categories && categories.length > 0 && (

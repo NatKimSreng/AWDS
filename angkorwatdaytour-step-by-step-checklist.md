@@ -16,7 +16,7 @@ A condensed, ordered checklist version of the full build plan. Check off each st
 | 10 | Build Expo Login/Register/Forgot Password screens + secure token storage | Phase 3 (Wk 3–4) | ☑ |
 | 11 | Build public browsing API — activities (with filters), activity detail, categories, cities | Phase 4 (Wk 4–6) | ☑ |
 | 12 | Build Expo Home, Search Results, Category, Activity Detail, Provider Profile screens | Phase 4 (Wk 4–6) | ☑ |
-| 13 | Add multi-currency (USD/KHR) toggle and language (EN/KM) toggle | Phase 4 (Wk 4–6) | ☐ |
+| 13 | Add multi-currency (USD/KHR) toggle and language (EN/KM) toggle | Phase 4 (Wk 4–6) | ☑ |
 | 14 | Build marketing/SEO website pages — homepage, category/tour landing pages, blog, static/legal pages | Phase 4 (Wk 4–6) | ☐ |
 | 15 | Build availability check + create-booking API with Redis slot locking (prevent overbooking) | Phase 5 (Wk 6–8) | ☐ |
 | 16 | Build Expo booking flow (date/time, travelers, add-ons) and checkout screen | Phase 5 (Wk 6–8) | ☐ |

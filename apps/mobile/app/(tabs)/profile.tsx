@@ -3,6 +3,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuthStore } from '@/stores/authStore';
 import { logout } from '@/lib/authApi';
+import { CurrencyToggle } from '@/components/CurrencyToggle';
+import { LanguageToggle } from '@/components/LanguageToggle';
 
 export default function ProfileScreen() {
   const { user, clearAuth } = useAuthStore((state) => ({
@@ -25,6 +27,14 @@ export default function ProfileScreen() {
           {user?.name ?? 'Guest'}
         </Text>
         <Text className="font-body text-stone-gray">{user?.email ?? 'Not signed in'}</Text>
+      </View>
+
+      <View className="bg-white rounded-2xl p-5 shadow-sm mb-4">
+        <Text className="font-heading text-lg text-stone-charcoal mb-3">Preferences</Text>
+        <Text className="font-body text-stone-gray text-sm mb-2">Currency</Text>
+        <CurrencyToggle />
+        <Text className="font-body text-stone-gray text-sm mb-2 mt-4">Language</Text>
+        <LanguageToggle />
       </View>
 
       <Pressable
