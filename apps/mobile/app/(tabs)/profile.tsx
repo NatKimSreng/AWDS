@@ -70,9 +70,10 @@ export default function ProfileScreen() {
 
         <View className="bg-white rounded-2xl p-5 shadow-sm mb-4">
           <Text className="font-heading text-lg text-stone-charcoal mb-2">Account</Text>
-          <MenuRow icon="ticket" label="My Bookings" onPress={() => router.push('/bookings')} />
-          <MenuRow icon="comments" label="Messages" onPress={() => router.push('/messages')} />
+          <MenuRow icon="ticket" label="My Bookings" onPress={() => router.push('/(tabs)/bookings')} />
+          <MenuRow icon="comments" label="Messages" onPress={() => router.push('/(tabs)/messages')} />
           <MenuRow icon="heart" label="Favorites" onPress={() => router.push('/favorites')} />
+          <MenuRow icon="question-circle" label="Support / AI Chat" onPress={() => router.push('/support' as never)} />
         </View>
 
         <Pressable

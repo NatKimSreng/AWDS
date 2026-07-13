@@ -51,4 +51,9 @@ return [
         'webhook_secret' => env('BAKONG_WEBHOOK_SECRET'),
     ],
 
+    'openai' => [
+        'key' => env('OPENAI_API_KEY'),
+        'model' => env('OPENAI_CHAT_MODEL', 'gpt-4o-mini'),
+    ],
+
 ];

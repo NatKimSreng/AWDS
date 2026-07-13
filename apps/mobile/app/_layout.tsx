@@ -131,6 +131,8 @@ function RootLayoutNav() {
             <Stack.Screen name="activity/[slug]" options={{ headerShown: false }} />
             <Stack.Screen name="provider/[id]" options={{ headerShown: false }} />
             <Stack.Screen name="favorites" options={{ headerShown: false }} />
+            <Stack.Screen name="support" options={{ headerShown: false }} />
+            <Stack.Screen name="support/[id]" options={{ headerShown: false }} />
             <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
           </Stack>
         </ThemeProvider>

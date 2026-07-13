@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Auth\ResetPasswordController;
 use App\Http\Controllers\Api\BookingCancellationController;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\FavoriteController;
+use App\Http\Controllers\Api\AiChatController;
 use App\Http\Controllers\Api\MessageThreadController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\Public\ActivityController as PublicActivityController;
@@ -121,6 +122,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->whereNumber('thread')
         ->whereNumber('message')
         ->name('message-threads.messages.read');
+
+    Route::post('/ai/chat', [AiChatController::class, 'chat'])->name('ai.chat');
+    Route::get('/ai/conversations', [AiChatController::class, 'index'])->name('ai.conversations.index');
+    Route::get('/ai/conversations/{conversation}', [AiChatController::class, 'show'])
+        ->whereNumber('conversation')
+        ->name('ai.conversations.show');
+    Route::post('/ai/conversations/{conversation}/escalate', [AiChatController::class, 'escalate'])
+        ->whereNumber('conversation')
+        ->name('ai.conversations.escalate');
 });
 
 Route::post('/payments/khqr/webhook', [PaymentController::class, 'khqrWebhook'])
