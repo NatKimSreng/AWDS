@@ -22,7 +22,7 @@ A condensed, ordered checklist version of the full build plan. Check off each st
 | 16 | Build Expo booking flow (date/time, travelers, add-ons) and checkout screen | Phase 5 (Wk 6–8) | ☑ |
 | 17 | Integrate Bakong KHQR payment (QR generation + confirmation polling/webhook) | Phase 5 (Wk 6–8) | ☐ |
 | 18 | Integrate Visa/Mastercard via Stripe or ABA PayWay | Phase 5 (Wk 6–8) | ☐ |
-| 19 | Build payment webhook handlers, e-ticket (QR) generation, booking confirmation screen/email | Phase 5 (Wk 6–8) | ☐ |
+| 19 | Build payment webhook handlers, e-ticket (QR) generation, booking confirmation screen/email | Phase 5 (Wk 6–8) | ☑ |
 | 20 | Implement cancellation & refund logic per your policy rules | Phase 5 (Wk 6–8) | ☐ |
 | 21 | Build reviews (with photo upload), wishlist/favorites, and customer↔provider messaging | Phase 6 (Wk 8–9) | ☐ |
 | 22 | Build AI chat support widget (OpenAI gpt-4o-mini) with human escalation | Phase 6 (Wk 8–9) | ☐ |

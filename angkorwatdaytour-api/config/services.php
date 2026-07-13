@@ -41,4 +41,14 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URL', '/api/auth/oauth/google/callback'),
     ],
 
+    'bakong' => [
+        'account_id' => env('BAKONG_ACCOUNT_ID'),
+        'merchant_name' => env('BAKONG_MERCHANT_NAME', 'AngkorWatDayTour'),
+        'merchant_city' => env('BAKONG_MERCHANT_CITY', 'Siem Reap'),
+        'merchant_category_code' => env('BAKONG_MERCHANT_CATEGORY_CODE', '5999'),
+        'api_token' => env('BAKONG_API_TOKEN'),
+        'api_url' => env('BAKONG_API_URL', 'https://sit-api-bakong.nbc.gov.kh'),
+        'webhook_secret' => env('BAKONG_WEBHOOK_SECRET'),
+    ],
+
 ];

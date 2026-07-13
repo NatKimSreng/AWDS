@@ -50,12 +50,12 @@ export default function BookingCheckoutScreen() {
     mutationFn: createBooking,
     onSuccess: (data) => {
       router.replace({
-        pathname: '/(tabs)/bookings',
+        pathname: '/booking/confirmation' as never,
+        params: {
+          bookingId: String(data.id),
+          bookingRef: data.booking_ref,
+        },
       });
-      Alert.alert(
-        'Booking created',
-        `Reference: ${data.booking_ref}\nComplete payment before ${new Date(data.expires_at).toLocaleTimeString()}.`
-      );
     },
     onError: (error: Error) => {
       Alert.alert('Booking failed', error.message ?? 'Please try again.');

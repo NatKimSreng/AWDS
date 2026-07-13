@@ -86,3 +86,30 @@ export async function createBooking(payload: CreateBookingPayload): Promise<Book
 
   return (response as { data: BookingResponse }).data;
 }
+
+export interface TicketResponse {
+  ticket_ref: string;
+  booking_ref: string;
+  status: string;
+  booking_status: string;
+  activity: string;
+  date: string;
+  time: string;
+  travelers: number;
+  total_price: string;
+  currency: string;
+  qr_data_uri: string;
+  qr_payload: Record<string, unknown>;
+  provider: string;
+}
+
+export async function fetchTicket(bookingId: number): Promise<TicketResponse> {
+  const response = await apiFetch(`/bookings/${bookingId}/ticket`);
+  return (response as { data: TicketResponse }).data;
+}
+
+export async function sendConfirmationEmail(bookingId: number): Promise<void> {
+  await apiFetch(`/bookings/${bookingId}/send-confirmation-email`, {
+    method: 'POST',
+  });
+}

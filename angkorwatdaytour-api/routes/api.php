@@ -8,7 +8,9 @@ use App\Http\Controllers\Api\Auth\LogoutController;
 use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\Auth\ResetPasswordController;
 use App\Http\Controllers\Api\BookingController;
+use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\Public\ActivityController as PublicActivityController;
+use App\Http\Controllers\Api\TicketController;
 use App\Http\Controllers\Api\Public\AvailabilityController as PublicAvailabilityController;
 use App\Http\Controllers\Api\Public\CategoryController as PublicCategoryController;
 use App\Http\Controllers\Api\Public\CityController as PublicCityController;
@@ -55,7 +57,26 @@ Route::middleware(['auth:sanctum'])->group(function () {
     })->name('user.show');
 
     Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
+
+    Route::post('/bookings/{booking}/payments/khqr', [PaymentController::class, 'khqr'])
+        ->whereNumber('booking')
+        ->name('payments.khqr.generate');
+
+    Route::get('/payments/{payment}/khqr-status', [PaymentController::class, 'khqrStatus'])
+        ->whereNumber('payment')
+        ->name('payments.khqr.status');
+
+    Route::get('/bookings/{booking}/ticket', [TicketController::class, 'show'])
+        ->whereNumber('booking')
+        ->name('bookings.ticket.show');
+
+    Route::post('/bookings/{booking}/send-confirmation-email', [TicketController::class, 'sendConfirmationEmail'])
+        ->whereNumber('booking')
+        ->name('bookings.confirmation-email.send');
 });
+
+Route::post('/payments/khqr/webhook', [PaymentController::class, 'khqrWebhook'])
+    ->name('payments.khqr.webhook');
 
 /*
 |--------------------------------------------------------------------------

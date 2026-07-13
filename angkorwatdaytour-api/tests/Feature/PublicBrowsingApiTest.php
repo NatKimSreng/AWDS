@@ -68,7 +68,14 @@ class PublicBrowsingApiTest extends TestCase
             'title' => 'Matching Tour',
         ]);
 
-        Activity::factory()->live()->create();
+        $otherCategory = ActivityCategory::where('id', '!=', $category->id)->first();
+        $otherCity = City::where('id', '!=', $city->id)->first();
+
+        Activity::factory()->live()->create([
+            'category_id' => $otherCategory?->id ?? $category->id,
+            'city_id' => $otherCity?->id ?? $city->id,
+            'title' => 'Non-matching Tour',
+        ]);
 
         $response = $this->getJson("/api/public/activities?category={$category->slug}&city={$city->slug}");
 

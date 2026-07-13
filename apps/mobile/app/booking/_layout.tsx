@@ -6,6 +6,7 @@ export default function BookingLayout() {
       <Stack.Screen name="date-time" />
       <Stack.Screen name="travelers" />
       <Stack.Screen name="checkout" />
+      <Stack.Screen name="confirmation" />
     </Stack>
   );
 }
