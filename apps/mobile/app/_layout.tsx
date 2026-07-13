@@ -30,19 +30,25 @@ SplashScreen.preventAutoHideAsync();
 function useProtectedRoute() {
   const router = useRouter();
   const segments = useSegments();
-  const { token, isLoading, restoreToken } = useAuthStore((state) => ({
-    token: state.token,
-    isLoading: state.isLoading,
-    restoreToken: state.restoreToken,
-  }));
+  const token = useAuthStore((state) => state.token);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const restoreToken = useAuthStore((state) => state.restoreToken);
   const [hasRestored, setHasRestored] = useState(false);
 
   useEffect(() => {
-    restoreToken().finally(() => setHasRestored(true));
+    let mounted = true;
+
+    restoreToken().finally(() => {
+      if (mounted) setHasRestored(true);
+    });
+
+    return () => {
+      mounted = false;
+    };
   }, [restoreToken]);
 
   useEffect(() => {
-    if (!hasRestored) return;
+    if (!hasRestored || isLoading) return;
 
     const inAuthGroup = segments[0] === '(auth)';
 
@@ -51,9 +57,9 @@ function useProtectedRoute() {
     } else if (token && inAuthGroup) {
       router.replace('/(tabs)');
     }
-  }, [token, segments, hasRestored, router]);
+  }, [token, segments, hasRestored, isLoading, router]);
 
-  return isLoading && !hasRestored;
+  return !hasRestored || isLoading;
 }
 
 export default function RootLayout() {
@@ -81,10 +87,8 @@ export default function RootLayout() {
 }
 
 function SettingsLoader() {
-  const { setAvailableCurrencies, setAvailableLanguages } = useSettingsStore((state) => ({
-    setAvailableCurrencies: state.setAvailableCurrencies,
-    setAvailableLanguages: state.setAvailableLanguages,
-  }));
+  const setAvailableCurrencies = useSettingsStore((state) => state.setAvailableCurrencies);
+  const setAvailableLanguages = useSettingsStore((state) => state.setAvailableLanguages);
 
   useEffect(() => {
     let cancelled = false;
@@ -123,10 +127,10 @@ function RootLayoutNav() {
           <Stack>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="search" options={{ headerShown: false }} />
             <Stack.Screen name="category/[slug]" options={{ headerShown: false }} />
             <Stack.Screen name="activity/[slug]" options={{ headerShown: false }} />
             <Stack.Screen name="provider/[id]" options={{ headerShown: false }} />
+            <Stack.Screen name="messages" options={{ headerShown: false }} />
             <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
           </Stack>
         </ThemeProvider>

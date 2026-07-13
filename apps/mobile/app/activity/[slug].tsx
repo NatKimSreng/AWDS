@@ -9,21 +9,62 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { fetchActivity } from '@/lib/publicApi';
 import { formatPrice } from '@/lib/formatCurrency';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useAuthStore } from '@/stores/authStore';
+import { fetchFavoriteStatus, toggleFavorite } from '@/lib/favoriteApi';
+import { fetchPublicReviews, PublicReview } from '@/lib/reviewApi';
 
 export default function ActivityDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const currency = useSettingsStore((state) => state.currency);
+  const queryClient = useQueryClient();
+
+  const userId = useAuthStore((state) => state.user?.id);
 
   const { data: activity, isLoading } = useQuery({
     queryKey: ['activity', slug],
     queryFn: () => fetchActivity(slug),
     enabled: !!slug,
   });
+
+  const activityId = activity ? (activity.id as number) : null;
+
+  const { data: favoriteStatus } = useQuery({
+    queryKey: ['favorite-status', activityId],
+    queryFn: () => fetchFavoriteStatus(activityId as number),
+    enabled: !!userId && !!activityId,
+  });
+
+  const [optimisticFavorite, setOptimisticFavorite] = useState<boolean | null>(null);
+  const isFavorite = optimisticFavorite ?? favoriteStatus?.is_favorite ?? false;
+
+  const favoriteMutation = useMutation({
+    mutationFn: () => toggleFavorite(activityId as number),
+    onMutate: async () => {
+      setOptimisticFavorite(!isFavorite);
+    },
+    onError: () => {
+      setOptimisticFavorite((prev) => (prev === null ? null : !prev));
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['favorite-status', activityId] });
+      queryClient.invalidateQueries({ queryKey: ['favorites'] });
+      setOptimisticFavorite(null);
+    },
+  });
+
+  const { data: reviewsResponse } = useQuery({
+    queryKey: ['activity-reviews', slug],
+    queryFn: () => fetchPublicReviews(slug),
+    enabled: !!slug,
+  });
+
+  const reviews = reviewsResponse?.data ?? [];
 
   if (isLoading) {
     return (
@@ -57,6 +98,20 @@ export default function ActivityDetailScreen() {
           >
             <FontAwesome name="arrow-left" size={18} color="#2B2622" />
           </Pressable>
+
+          {userId && (
+            <Pressable
+              onPress={() => favoriteMutation.mutate()}
+              disabled={favoriteMutation.isPending}
+              className="absolute top-4 right-4 w-10 h-10 bg-white/90 rounded-full items-center justify-center z-10"
+            >
+              <FontAwesome
+                name={isFavorite ? 'heart' : 'heart-o'}
+                size={20}
+                color={isFavorite ? '#C8530A' : '#2B2622'}
+              />
+            </Pressable>
+          )}
         </View>
 
         <View className="p-5">
@@ -114,6 +169,37 @@ export default function ActivityDetailScreen() {
               <Text className="font-body text-stone-gray">{languages}</Text>
             </View>
           )}
+
+          <View className="bg-white rounded-2xl p-4 shadow-sm mb-4">
+            <View className="flex-row justify-between items-center mb-3">
+              <Text className="font-heading text-lg text-stone-charcoal">Reviews</Text>
+              <Text className="font-body text-stone-gray">
+                {reviews.length} review{reviews.length === 1 ? '' : 's'}
+              </Text>
+            </View>
+
+            {reviews.length === 0 ? (
+              <Text className="font-body text-stone-gray">No reviews yet.</Text>
+            ) : (
+              reviews.slice(0, 3).map((review: PublicReview) => (
+                <View key={review.id} className="mb-4 last:mb-0">
+                  <View className="flex-row items-center mb-1">
+                    <FontAwesome name="star" size={12} color="#D4AF37" />
+                    <Text className="font-body text-stone-charcoal ml-1 mr-2">{review.rating}</Text>
+                    <Text className="font-body text-stone-gray text-sm">{review.user.name}</Text>
+                  </View>
+                  {review.comment && (
+                    <Text className="font-body text-stone-charcoal leading-5">
+                      {review.comment}
+                    </Text>
+                  )}
+                  <Text className="font-body text-stone-gray text-xs mt-1">
+                    {new Date(review.created_at).toLocaleDateString()}
+                  </Text>
+                </View>
+              ))
+            )}
+          </View>
         </View>
       </ScrollView>
 

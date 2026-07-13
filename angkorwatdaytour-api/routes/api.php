@@ -9,8 +9,11 @@ use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\Auth\ResetPasswordController;
 use App\Http\Controllers\Api\BookingCancellationController;
 use App\Http\Controllers\Api\BookingController;
+use App\Http\Controllers\Api\FavoriteController;
+use App\Http\Controllers\Api\MessageThreadController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\Public\ActivityController as PublicActivityController;
+use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\TicketController;
 use App\Http\Controllers\Api\Public\AvailabilityController as PublicAvailabilityController;
 use App\Http\Controllers\Api\Public\CategoryController as PublicCategoryController;
@@ -88,6 +91,35 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/bookings/{booking}/send-confirmation-email', [TicketController::class, 'sendConfirmationEmail'])
         ->whereNumber('booking')
         ->name('bookings.confirmation-email.send');
+
+    Route::get('/bookings/{booking}/reviews/eligibility', [ReviewController::class, 'eligibility'])
+        ->whereNumber('booking')
+        ->name('bookings.reviews.eligibility');
+
+    Route::post('/bookings/{booking}/reviews', [ReviewController::class, 'store'])
+        ->whereNumber('booking')
+        ->name('bookings.reviews.store');
+
+    Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
+    Route::post('/favorites', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
+    Route::get('/activities/{activity}/favorite', [FavoriteController::class, 'status'])
+        ->whereNumber('activity')
+        ->name('favorites.status');
+
+    Route::get('/message-threads', [MessageThreadController::class, 'index'])->name('message-threads.index');
+    Route::post('/bookings/{booking}/message-threads', [MessageThreadController::class, 'store'])
+        ->whereNumber('booking')
+        ->name('message-threads.store');
+    Route::get('/message-threads/{thread}', [MessageThreadController::class, 'show'])
+        ->whereNumber('thread')
+        ->name('message-threads.show');
+    Route::post('/message-threads/{thread}/messages', [MessageThreadController::class, 'sendMessage'])
+        ->whereNumber('thread')
+        ->name('message-threads.messages.store');
+    Route::put('/message-threads/{thread}/messages/{message}/read', [MessageThreadController::class, 'markRead'])
+        ->whereNumber('thread')
+        ->whereNumber('message')
+        ->name('message-threads.messages.read');
 });
 
 Route::post('/payments/khqr/webhook', [PaymentController::class, 'khqrWebhook'])
@@ -136,4 +168,7 @@ Route::prefix('public')->group(function () {
 
     Route::get('/settings', [SettingsController::class, 'index'])->name('public.settings');
     Route::post('/exchange/convert', [ExchangeRateController::class, 'convert'])->name('public.exchange.convert');
+
+    Route::get('/activities/{slug}/reviews', [ReviewController::class, 'publicForActivity'])
+        ->name('public.activities.reviews');
 });

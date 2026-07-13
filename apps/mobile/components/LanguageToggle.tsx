@@ -8,11 +8,9 @@ const LABELS: Record<string, string> = {
 };
 
 export function LanguageToggle() {
-  const { language, availableLanguages, setLanguage } = useSettingsStore((state) => ({
-    language: state.language,
-    availableLanguages: state.availableLanguages,
-    setLanguage: state.setLanguage,
-  }));
+  const language = useSettingsStore((state) => state.language);
+  const availableLanguages = useSettingsStore((state) => state.availableLanguages);
+  const setLanguage = useSettingsStore((state) => state.setLanguage);
 
   const codes = availableLanguages.length
     ? availableLanguages.map((l) => l.code)

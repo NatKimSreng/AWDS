@@ -7,10 +7,8 @@ import { CurrencyToggle } from '@/components/CurrencyToggle';
 import { LanguageToggle } from '@/components/LanguageToggle';
 
 export default function ProfileScreen() {
-  const { user, clearAuth } = useAuthStore((state) => ({
-    user: state.user,
-    clearAuth: state.clearAuth,
-  }));
+  const user = useAuthStore((state) => state.user);
+  const clearAuth = useAuthStore((state) => state.clearAuth);
 
   const handleLogout = async () => {
     try {

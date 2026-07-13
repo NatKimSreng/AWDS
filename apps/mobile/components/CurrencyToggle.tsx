@@ -3,11 +3,9 @@ import { View, Text, Pressable } from 'react-native';
 import { useSettingsStore } from '@/stores/settingsStore';
 
 export function CurrencyToggle() {
-  const { currency, availableCurrencies, setCurrency } = useSettingsStore((state) => ({
-    currency: state.currency,
-    availableCurrencies: state.availableCurrencies,
-    setCurrency: state.setCurrency,
-  }));
+  const currency = useSettingsStore((state) => state.currency);
+  const availableCurrencies = useSettingsStore((state) => state.availableCurrencies);
+  const setCurrency = useSettingsStore((state) => state.setCurrency);
 
   const codes = availableCurrencies.length
     ? availableCurrencies.map((c) => c.code)

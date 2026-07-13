@@ -70,4 +70,39 @@ export async function apiFetch(
   return data;
 }
 
+export async function apiFetchMultipart(
+  path: string,
+  options: RequestOptions = {}
+): Promise<unknown> {
+  const token = await getToken();
+  const headers = new Headers(options.headers);
+
+  headers.set('Accept', 'application/json');
+  headers.delete('Content-Type');
+
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  const response = await fetchWithTimeout(`${API_URL}/api${path}`, {
+    ...options,
+    headers,
+  });
+
+  const contentType = response.headers.get('content-type') ?? '';
+  const data = contentType.includes('application/json')
+    ? await response.json()
+    : null;
+
+  if (!response.ok) {
+    throw new ApiError(
+      data?.message ?? `Request failed with status ${response.status}`,
+      response.status,
+      data ?? undefined
+    );
+  }
+
+  return data;
+}
+
 export { ApiError };

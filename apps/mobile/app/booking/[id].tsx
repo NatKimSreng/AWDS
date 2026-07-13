@@ -19,6 +19,7 @@ import {
   BookingListItem,
   CancellationPreviewResponse,
 } from '@/lib/bookingApi';
+import { createThread } from '@/lib/messageApi';
 
 const statusStyles: Record<string, string> = {
   pending: 'bg-amber-100 text-amber-800',
@@ -64,6 +65,18 @@ export default function BookingDetailScreen() {
     onError: (err: unknown) => {
       const message = err instanceof Error ? err.message : 'Cancellation failed.';
       Alert.alert('Could not cancel', message);
+    },
+  });
+
+  const threadMutation = useMutation({
+    mutationFn: () => createThread(bookingId),
+    onSuccess: (thread) => {
+      queryClient.invalidateQueries({ queryKey: ['message-threads'] });
+      router.push(`/messages/${thread.id}` as never);
+    },
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : 'Unable to start conversation.';
+      Alert.alert('Error', message);
     },
   });
 
@@ -186,6 +199,33 @@ export default function BookingDetailScreen() {
             ${booking.total_price} {booking.currency}
           </Text>
         </Section>
+
+        {booking.status === 'completed' && (
+          <TouchableOpacity
+            onPress={() => router.push(`/booking/review/${bookingId}`)}
+            activeOpacity={0.8}
+            className="bg-angkor-orange rounded-xl py-4 items-center mb-3"
+          >
+            <Text className="text-white font-heading text-base">Write a review</Text>
+          </TouchableOpacity>
+        )}
+
+        {['confirmed', 'completed'].includes(booking.status) && (
+          <TouchableOpacity
+            onPress={() => threadMutation.mutate()}
+            disabled={threadMutation.isPending}
+            activeOpacity={0.8}
+            className={`rounded-xl py-4 items-center mb-3 ${
+              threadMutation.isPending ? 'bg-stone-300' : 'bg-stone-charcoal active:bg-stone-charcoal/80'
+            }`}
+          >
+            {threadMutation.isPending ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text className="text-white font-heading text-base">Message provider</Text>
+            )}
+          </TouchableOpacity>
+        )}
 
         {preview?.can_cancel && (
           <View className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-3">

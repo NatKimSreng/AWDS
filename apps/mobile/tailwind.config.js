@@ -21,9 +21,9 @@ module.exports = {
         'khmer-gold': '#D4AF37',
       },
       fontFamily: {
-        heading: ['PlayfairDisplay_600SemiBold', 'serif'],
-        body: ['Inter_400Regular', 'sans-serif'],
-        khmer: ['NotoSansKhmer_400Regular', 'sans-serif'],
+        heading: ['System', 'Georgia', 'serif'],
+        body: ['System', 'sans-serif'],
+        khmer: ['System', 'sans-serif'],
       },
     },
   },
