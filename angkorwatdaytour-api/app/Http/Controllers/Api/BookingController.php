@@ -20,30 +20,29 @@ class BookingController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'activity_id' => ['required', 'integer', 'exists:activities,id'],
             'time_slot_id' => ['required', 'integer', 'exists:time_slots,id'],
             'traveler_count' => ['required', 'integer', 'min:1', 'max:50'],
             'currency' => ['nullable', 'string', 'size:3'],
             'special_requests' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $activity = Activity::query()
-            ->where('id', $validated['activity_id'])
-            ->live()
-            ->first();
+        $timeSlot = TimeSlot::query()->with('activity')->find($validated['time_slot_id']);
+
+        if (! $timeSlot) {
+            return response()->json(['message' => 'Selected time slot is not available.'], 422);
+        }
+
+        $activity = $timeSlot->activity;
+
+        if (! $activity || $activity->status !== 'live' || ! $activity->published_at) {
+            return response()->json(['message' => 'Activity not found or unavailable.'], 404);
+        }
 
         if (! $activity) {
             return response()->json(['message' => 'Activity not found or unavailable.'], 404);
         }
 
-        $timeSlot = TimeSlot::query()
-            ->where('id', $validated['time_slot_id'])
-            ->where('activity_id', $activity->id)
-            ->where('is_blackout', false)
-            ->where('date', '>=', now()->toDateString())
-            ->first();
-
-        if (! $timeSlot) {
+        if ($timeSlot->is_blackout || $timeSlot->date->format('Y-m-d') < now()->toDateString()) {
             return response()->json(['message' => 'Selected time slot is not available.'], 422);
         }
 

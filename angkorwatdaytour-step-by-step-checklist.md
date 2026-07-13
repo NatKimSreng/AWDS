@@ -19,7 +19,7 @@ A condensed, ordered checklist version of the full build plan. Check off each st
 | 13 | Add multi-currency (USD/KHR) toggle and language (EN/KM) toggle | Phase 4 (Wk 4–6) | ☑ |
 | 14 | Build marketing/SEO website pages — homepage, category/tour landing pages, blog, static/legal pages | Phase 4 (Wk 4–6) | ☑ |
 | 15 | Build availability check + create-booking API with Redis slot locking (prevent overbooking) | Phase 5 (Wk 6–8) | ☑ |
-| 16 | Build Expo booking flow (date/time, travelers, add-ons) and checkout screen | Phase 5 (Wk 6–8) | ☐ |
+| 16 | Build Expo booking flow (date/time, travelers, add-ons) and checkout screen | Phase 5 (Wk 6–8) | ☑ |
 | 17 | Integrate Bakong KHQR payment (QR generation + confirmation polling/webhook) | Phase 5 (Wk 6–8) | ☐ |
 | 18 | Integrate Visa/Mastercard via Stripe or ABA PayWay | Phase 5 (Wk 6–8) | ☐ |
 | 19 | Build payment webhook handlers, e-ticket (QR) generation, booking confirmation screen/email | Phase 5 (Wk 6–8) | ☐ |

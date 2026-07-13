@@ -124,7 +124,21 @@ export default function ActivityDetailScreen() {
             {formatPrice(activity.base_price_usd as string, currency)}
           </Text>
         </View>
-        <Pressable className="bg-angkor-orange rounded-xl px-6 py-3 active:bg-angkor-orange-dark">
+        <Pressable
+          onPress={() =>
+            router.push({
+              pathname: '/booking/date-time',
+              params: {
+                slug: activity.slug as string,
+                title: activity.title as string,
+                basePrice: String(activity.base_price_usd),
+                duration: String(activity.duration_minutes),
+                maxGroup: String(activity.max_group),
+              },
+            })
+          }
+          className="bg-angkor-orange rounded-xl px-6 py-3 active:bg-angkor-orange-dark"
+        >
           <Text className="font-body text-white font-semibold">Check Availability</Text>
         </Pressable>
       </View>
