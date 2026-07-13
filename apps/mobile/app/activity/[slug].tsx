@@ -17,7 +17,9 @@ import { formatPrice } from '@/lib/formatCurrency';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useAuthStore } from '@/stores/authStore';
 import { fetchFavoriteStatus, toggleFavorite } from '@/lib/favoriteApi';
-import { fetchPublicReviews, PublicReview } from '@/lib/reviewApi';
+import { fetchPublicReviews, PublicReview, ReviewImage } from '@/lib/reviewApi';
+import { ImageWithFallback } from '@/components/ImageWithFallback';
+import { EmptyState } from '@/components/EmptyState';
 
 export default function ActivityDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -65,6 +67,7 @@ export default function ActivityDetailScreen() {
   });
 
   const reviews = reviewsResponse?.data ?? [];
+  const gallery = (activity?.gallery as string[] | undefined) ?? [];
 
   if (isLoading) {
     return (
@@ -77,10 +80,13 @@ export default function ActivityDetailScreen() {
   if (!activity) {
     return (
       <SafeAreaView className="flex-1 bg-sand-bg justify-center items-center px-6">
-        <Text className="font-body text-stone-gray">Tour not found.</Text>
-        <Pressable onPress={() => router.back()} className="mt-4">
-          <Text className="font-body text-angkor-orange font-semibold">Go back</Text>
-        </Pressable>
+        <EmptyState
+          icon="frown-o"
+          title="Tour not found"
+          subtitle="We couldn't find that experience."
+          actionLabel="Go back"
+          onAction={() => router.back()}
+        />
       </SafeAreaView>
     );
   }
@@ -91,10 +97,16 @@ export default function ActivityDetailScreen() {
   return (
     <SafeAreaView className="flex-1 bg-sand-bg">
       <ScrollView className="flex-1">
-        <View className="h-56 bg-stone-gray/20 relative">
+        <View className="relative">
+          <ImageWithFallback
+            uri={activity.hero_image as string | undefined}
+            containerClassName="h-64 w-full"
+            className="h-64 w-full"
+          />
+          <View className="absolute inset-0 bg-black/10" />
           <Pressable
             onPress={() => router.back()}
-            className="absolute top-4 left-4 w-10 h-10 bg-white/90 rounded-full items-center justify-center z-10"
+            className="absolute top-4 left-4 w-11 h-11 bg-white/90 rounded-full items-center justify-center z-10 active:bg-white"
           >
             <FontAwesome name="arrow-left" size={18} color="#2B2622" />
           </Pressable>
@@ -103,7 +115,7 @@ export default function ActivityDetailScreen() {
             <Pressable
               onPress={() => favoriteMutation.mutate()}
               disabled={favoriteMutation.isPending}
-              className="absolute top-4 right-4 w-10 h-10 bg-white/90 rounded-full items-center justify-center z-10"
+              className="absolute top-4 right-4 w-11 h-11 bg-white/90 rounded-full items-center justify-center z-10 active:bg-white"
             >
               <FontAwesome
                 name={isFavorite ? 'heart' : 'heart-o'}
@@ -114,27 +126,57 @@ export default function ActivityDetailScreen() {
           )}
         </View>
 
-        <View className="p-5">
-          <View className="flex-row items-center mb-2">
+        {gallery.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="bg-white py-3"
+          >
+            {gallery.map((url, index) => (
+              <ImageWithFallback
+                key={index}
+                uri={url}
+                containerClassName="w-24 h-24 rounded-xl mx-2"
+                className="w-24 h-24 rounded-xl"
+              />
+            ))}
+          </ScrollView>
+        )}
+
+        <View className="p-5 pb-24">
+          <View className="flex-row flex-wrap items-center gap-2 mb-3">
             <Text className="font-body text-sm text-stone-gray">
               {(activity.category as { name: string } | null)?.name} ·{' '}
               {(activity.city as { name: string } | null)?.name}
             </Text>
+            {(activity.is_instant_book as boolean) && (
+              <View className="bg-success-green/10 rounded-full px-2.5 py-0.5">
+                <Text className="font-body text-xs text-success-green font-semibold">Instant Book</Text>
+              </View>
+            )}
           </View>
 
           <Text className="font-heading text-2xl text-stone-charcoal mb-3">
             {activity.title as string}
           </Text>
 
-          <View className="flex-row items-center mb-4">
-            <FontAwesome name="star" size={16} color="#D4AF37" />
-            <Text className="font-body text-stone-charcoal ml-1 mr-3">
-              {activity.avg_rating as number} ({activity.reviews_count as number} reviews)
-            </Text>
-            <FontAwesome name="clock-o" size={16} color="#6B635C" />
-            <Text className="font-body text-stone-gray ml-1">
-              {durationHours}h
-            </Text>
+          <View className="flex-row items-center flex-wrap gap-y-2 mb-4">
+            <View className="flex-row items-center mr-4">
+              <FontAwesome name="star" size={16} color="#D4AF37" />
+              <Text className="font-body text-stone-charcoal ml-1">
+                {activity.avg_rating as number} ({activity.reviews_count as number} reviews)
+              </Text>
+            </View>
+            <View className="flex-row items-center mr-4">
+              <FontAwesome name="clock-o" size={16} color="#6B635C" />
+              <Text className="font-body text-stone-gray ml-1">{durationHours}h</Text>
+            </View>
+            <View className="flex-row items-center">
+              <FontAwesome name="users" size={16} color="#6B635C" />
+              <Text className="font-body text-stone-gray ml-1">
+                {activity.min_group as number}-{activity.max_group as number}
+              </Text>
+            </View>
           </View>
 
           <View className="bg-white rounded-2xl p-4 shadow-sm mb-4">
@@ -170,6 +212,28 @@ export default function ActivityDetailScreen() {
             </View>
           )}
 
+          <Pressable
+            onPress={() => router.push(`/provider/${(activity.provider as { id: number } | null)?.id}` as never)}
+            className="bg-white rounded-2xl p-4 shadow-sm mb-4 flex-row items-center active:bg-stone-gray/5"
+          >
+            <View className="w-12 h-12 rounded-full bg-angkor-orange/10 items-center justify-center mr-4">
+              <FontAwesome name="user" size={20} color="#C8530A" />
+            </View>
+            <View className="flex-1">
+              <Text className="font-heading text-base text-stone-charcoal">
+                {(activity.provider as { business_name: string } | null)?.business_name ?? 'Local provider'}
+              </Text>
+              <View className="flex-row items-center mt-0.5">
+                <FontAwesome name="star" size={12} color="#D4AF37" />
+                <Text className="font-body text-stone-gray text-sm ml-1">
+                  {(activity.provider as { avg_rating: number } | null)?.avg_rating ?? 0} ·{' '}
+                  {(activity.provider as { total_bookings: number } | null)?.total_bookings ?? 0} bookings
+                </Text>
+              </View>
+            </View>
+            <FontAwesome name="chevron-right" size={14} color="#9CA3AF" />
+          </Pressable>
+
           <View className="bg-white rounded-2xl p-4 shadow-sm mb-4">
             <View className="flex-row justify-between items-center mb-3">
               <Text className="font-heading text-lg text-stone-charcoal">Reviews</Text>
@@ -192,6 +256,18 @@ export default function ActivityDetailScreen() {
                     <Text className="font-body text-stone-charcoal leading-5">
                       {review.comment}
                     </Text>
+                  )}
+                  {review.images?.length > 0 && (
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-2">
+                      {review.images.map((image: ReviewImage, idx: number) => (
+                        <ImageWithFallback
+                          key={idx}
+                          uri={image.url}
+                          containerClassName="w-16 h-16 rounded-lg mr-2"
+                          className="w-16 h-16 rounded-lg"
+                        />
+                      ))}
+                    </ScrollView>
                   )}
                   <Text className="font-body text-stone-gray text-xs mt-1">
                     {new Date(review.created_at).toLocaleDateString()}

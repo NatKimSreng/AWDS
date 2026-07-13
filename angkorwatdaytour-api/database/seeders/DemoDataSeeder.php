@@ -63,7 +63,7 @@ class DemoDataSeeder extends Seeder
 
                 ActivityImage::factory()->hero()->create([
                     'activity_id' => $activity->id,
-                    'url' => fake()->imageUrl(1200, 800, 'travel'),
+                    'url' => $this->travelImageUrl(1200, 800),
                 ]);
                 ActivityImage::factory()->count(3)->create([
                     'activity_id' => $activity->id,
@@ -166,6 +166,28 @@ class DemoDataSeeder extends Seeder
         }
     }
 
+    private function travelImageUrl(int $width, int $height): string
+    {
+        $ids = [
+            '1518509569233-3c8b915e781f',
+            '1528127269322-539801943592',
+            '1555993539-1732b0258235',
+            '1569949381662-eb82be2a6f11',
+            '1534234828563-025cf17ebb8d',
+            '1528360983277-13d401cdc186',
+            '1545569341-9eb8b30979d9',
+            '1469854523086-cc02fe5d8800',
+            '1500530855697-b7d8d2cf6f3e',
+            '1476514525535-07fb3b4ae5f1',
+            '1469474968028-af502640d8a0',
+            '1501785888041-af3ef285b470',
+        ];
+
+        $id = $ids[array_rand($ids)];
+
+        return "https://images.unsplash.com/photo-{$id}?auto=format&fit=crop&w={$width}&h={$height}&q=80";
+    }
+
     private function providerDefinitions(): array
     {
         return [
@@ -191,6 +213,15 @@ class DemoDataSeeder extends Seeder
                         'category_slug' => 'temples-history',
                         'city_slug' => 'angkor-park',
                         'max_group' => 4,
+                    ],
+                    [
+                        'title' => 'Bayon & Ta Prohm Full-Day Explorer',
+                        'slug' => 'bayon-ta-prohm-full-day',
+                        'base_price' => 55,
+                        'duration' => 480,
+                        'category_slug' => 'temples-history',
+                        'city_slug' => 'angkor-park',
+                        'max_group' => 6,
                     ],
                 ],
             ],
@@ -257,6 +288,65 @@ class DemoDataSeeder extends Seeder
                         'category_slug' => 'food-culture',
                         'city_slug' => 'tonle-sap',
                         'max_group' => 12,
+                    ],
+                    [
+                        'title' => 'Tonlé Sap Sunset & Bird Watching',
+                        'slug' => 'tonle-sap-sunset-bird-watching',
+                        'base_price' => 50,
+                        'duration' => 300,
+                        'category_slug' => 'sunrise-sunset',
+                        'city_slug' => 'tonle-sap',
+                        'max_group' => 8,
+                    ],
+                ],
+            ],
+            [
+                'business_name' => 'Angkor Lens Expeditions',
+                'bio' => 'Photography-focused tours with professional tips, golden-hour timing, and hidden angles.',
+                'service_area' => 'Angkor Archaeological Park',
+                'activities' => [
+                    [
+                        'title' => 'Golden Hour Temple Photography',
+                        'slug' => 'golden-hour-temple-photography',
+                        'base_price' => 75,
+                        'duration' => 240,
+                        'category_slug' => 'photography',
+                        'city_slug' => 'angkor-park',
+                        'max_group' => 4,
+                    ],
+                    [
+                        'title' => 'Portrait Session in Ancient Ruins',
+                        'slug' => 'portrait-session-ancient-ruins',
+                        'base_price' => 90,
+                        'duration' => 180,
+                        'category_slug' => 'photography',
+                        'city_slug' => 'angkor-park',
+                        'max_group' => 3,
+                    ],
+                ],
+            ],
+            [
+                'business_name' => 'Khmer Horizon Journeys',
+                'bio' => 'Curated multi-day itineraries combining temples, countryside, and local culture.',
+                'service_area' => 'Siem Reap Province',
+                'activities' => [
+                    [
+                        'title' => '3-Day Angkor Deep Dive',
+                        'slug' => '3-day-angkor-deep-dive',
+                        'base_price' => 180,
+                        'duration' => 1440,
+                        'category_slug' => 'multi-day',
+                        'city_slug' => 'angkor-park',
+                        'max_group' => 6,
+                    ],
+                    [
+                        'title' => '2-Day Temples & Villages Combo',
+                        'slug' => '2-day-temples-villages-combo',
+                        'base_price' => 140,
+                        'duration' => 960,
+                        'category_slug' => 'multi-day',
+                        'city_slug' => 'rural-siem-reap',
+                        'max_group' => 6,
                     ],
                 ],
             ],

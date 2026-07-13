@@ -6,6 +6,7 @@ import {
   FlatList,
   Pressable,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -15,6 +16,8 @@ import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api';
 import { formatPrice } from '@/lib/formatCurrency';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { ImageWithFallback } from '@/components/ImageWithFallback';
+import { EmptyState } from '@/components/EmptyState';
 
 interface SearchResult {
   activities: Array<{
@@ -35,7 +38,7 @@ function fetchSearch(q: string): Promise<SearchResult> {
 export default function SearchScreen() {
   const [query, setQuery] = useState('');
 
-  const { data, isLoading } = useQuery<SearchResult>({
+  const { data, isLoading, refetch } = useQuery<SearchResult>({
     queryKey: ['search', query],
     queryFn: () => fetchSearch(query),
     enabled: query.length >= 2,
@@ -50,9 +53,11 @@ export default function SearchScreen() {
         onPress={() => router.push(`/activity/${item.slug}`)}
         className="flex-row items-center bg-white rounded-xl p-3 mb-3 shadow-sm"
       >
-        <View className="w-16 h-16 rounded-lg bg-stone-gray/20 mr-3 overflow-hidden">
-          {/* Image placeholder — replace with Image component once URLs are real */}
-        </View>
+        <ImageWithFallback
+          uri={item.hero_image}
+          containerClassName="w-16 h-16 rounded-lg mr-3"
+          className="w-16 h-16 rounded-lg"
+        />
         <View className="flex-1">
           <Text className="font-body text-stone-charcoal font-semibold" numberOfLines={1}>
             {item.title}
@@ -67,13 +72,28 @@ export default function SearchScreen() {
     []
   );
 
-  const renderCategory = useCallback(
+  const renderCategoryChip = useCallback(
     ({ item }: { item: SearchResult['categories'][0] }) => (
       <Pressable
         onPress={() => router.push(`/category/${item.slug}`)}
-        className="bg-angkor-orange/10 rounded-full px-4 py-2 mr-2"
+        className="rounded-full px-4 py-2 mr-2 bg-angkor-orange/10"
       >
-        <Text className="font-body text-angkor-orange text-sm">{item.name}</Text>
+        <Text className="font-body text-sm text-angkor-orange">
+          {item.icon ? `${item.icon} ` : ''}
+          {item.name}
+        </Text>
+      </Pressable>
+    ),
+    []
+  );
+
+  const renderCityChip = useCallback(
+    ({ item }: { item: SearchResult['cities'][0] }) => (
+      <Pressable
+        onPress={() => router.push(`/search?city=${item.slug}`)}
+        className="rounded-full px-4 py-2 mr-2 bg-stone-charcoal/10"
+      >
+        <Text className="font-body text-sm text-stone-charcoal">{item.name}</Text>
       </Pressable>
     ),
     []
@@ -102,10 +122,11 @@ export default function SearchScreen() {
 
       {query.length < 2 ? (
         <View className="flex-1 justify-center items-center px-8">
-          <FontAwesome name="search" size={48} color="#C8530A" />
-          <Text className="font-body text-stone-gray text-center mt-4">
-            Type at least 2 characters to find tours, categories, and cities.
-          </Text>
+          <EmptyState
+            icon="search"
+            title="Find your next tour"
+            subtitle="Search tours, categories, and destinations."
+          />
         </View>
       ) : isLoading ? (
         <View className="flex-1 justify-center items-center">
@@ -117,26 +138,47 @@ export default function SearchScreen() {
           renderItem={renderActivity}
           keyExtractor={(item) => `activity-${item.id}`}
           contentContainerStyle={{ padding: 16, paddingTop: 0 }}
+          refreshControl={
+            <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor="#C8530A" />
+          }
           ListHeaderComponent={
-            data?.categories?.length ? (
-              <View className="mb-4">
-                <Text className="font-heading text-lg text-stone-charcoal mb-2">
-                  Categories
-                </Text>
-                <FlatList
-                  data={data.categories}
-                  renderItem={renderCategory}
-                  keyExtractor={(item) => `category-${item.id}`}
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                />
-              </View>
-            ) : null
+            <View>
+              {data?.categories != null && data.categories.length > 0 && (
+                <View className="mb-4">
+                  <Text className="font-heading text-lg text-stone-charcoal mb-2">
+                    Categories
+                  </Text>
+                  <FlatList
+                    data={data.categories}
+                    renderItem={renderCategoryChip}
+                    keyExtractor={(item) => `category-${item.id}`}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                  />
+                </View>
+              )}
+              {data?.cities != null && data.cities.length > 0 && (
+                <View className="mb-4">
+                  <Text className="font-heading text-lg text-stone-charcoal mb-2">
+                    Destinations
+                  </Text>
+                  <FlatList
+                    data={data.cities}
+                    renderItem={renderCityChip}
+                    keyExtractor={(item) => `city-${item.id}`}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                  />
+                </View>
+              )}
+            </View>
           }
           ListEmptyComponent={
-            <View className="py-12 items-center">
-              <Text className="font-body text-stone-gray">No results found for "{query}"</Text>
-            </View>
+            <EmptyState
+              icon="search"
+              title="No results found"
+              subtitle={`We couldn't find anything matching "${query}".`}
+            />
           }
         />
       )}

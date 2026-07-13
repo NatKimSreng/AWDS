@@ -72,7 +72,7 @@ export default function BookingDetailScreen() {
     mutationFn: () => createThread(bookingId),
     onSuccess: (thread) => {
       queryClient.invalidateQueries({ queryKey: ['message-threads'] });
-      router.push(`/messages/${thread.id}` as never);
+      router.push(`/(tabs)/messages/${thread.id}` as never);
     },
     onError: (err: unknown) => {
       const message = err instanceof Error ? err.message : 'Unable to start conversation.';

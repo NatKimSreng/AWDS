@@ -68,12 +68,16 @@ class BookingApiTest extends TestCase
         TimeSlot::factory()->blackout()->create([
             'activity_id' => $activity->id,
             'date' => now()->addDay()->toDateString(),
+            'start_time' => '10:00:00',
+            'end_time' => '13:00:00',
         ]);
 
         $availableDate = now()->addDay()->toDateString();
         TimeSlot::factory()->create([
             'activity_id' => $activity->id,
             'date' => $availableDate,
+            'start_time' => '14:00:00',
+            'end_time' => '17:00:00',
             'is_blackout' => false,
         ]);
 

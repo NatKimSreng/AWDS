@@ -22,6 +22,28 @@ export interface ProviderSummary {
   avg_rating: string;
 }
 
+export interface ProviderActivity {
+  id: number;
+  title: string;
+  slug: string;
+  duration_minutes: number;
+  base_price_usd: string;
+  avg_rating: number;
+  reviews_count: number;
+  hero_image: string | null;
+}
+
+export interface ProviderDetail {
+  id: number;
+  business_name: string;
+  bio: string | null;
+  service_area: string | null;
+  avg_rating: number;
+  total_bookings: number;
+  activities_count: number;
+  activities: ProviderActivity[];
+}
+
 export interface ActivityCard {
   id: number;
   title: string;
@@ -90,4 +112,9 @@ export async function fetchActivities(filters: Filters = {}): Promise<PaginatedA
 export async function fetchActivity(slug: string): Promise<Record<string, unknown>> {
   const response = await apiFetch(`/public/activities/${encodeURIComponent(slug)}`);
   return (response as { data: Record<string, unknown> }).data;
+}
+
+export async function fetchProvider(id: number | string): Promise<ProviderDetail> {
+  const response = await apiFetch(`/public/providers/${id}`);
+  return (response as { data: ProviderDetail }).data;
 }

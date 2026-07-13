@@ -10,7 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useNavigation } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -25,6 +25,15 @@ export default function ThreadScreen() {
 
   const [messageBody, setMessageBody] = useState('');
   const scrollRef = useRef<ScrollView>(null);
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.setOptions({ tabBarStyle: { display: 'none' } });
+
+    return () => {
+      navigation.setOptions({ tabBarStyle: undefined });
+    };
+  }, [navigation]);
 
   const { data: thread, isLoading } = useQuery({
     queryKey: ['message-thread', id],

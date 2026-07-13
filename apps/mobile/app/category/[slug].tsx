@@ -14,6 +14,8 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchCategories, fetchActivities, type ActivityCard } from '@/lib/publicApi';
 import { formatPrice } from '@/lib/formatCurrency';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { ImageWithFallback } from '@/components/ImageWithFallback';
+import { EmptyState } from '@/components/EmptyState';
 
 function ActivityCardItem({
   activity,
@@ -25,9 +27,13 @@ function ActivityCardItem({
   return (
     <Pressable
       onPress={() => router.push(`/activity/${activity.slug}`)}
-      className="bg-white rounded-2xl overflow-hidden shadow-sm mb-4"
+      className="bg-white rounded-2xl overflow-hidden shadow-sm mb-4 active:opacity-90"
     >
-      <View className="h-40 bg-stone-gray/20" />
+      <ImageWithFallback
+        uri={activity.hero_image}
+        containerClassName="h-40 w-full"
+        className="h-40 w-full"
+      />
       <View className="p-4">
         <Text className="font-heading text-lg text-stone-charcoal mb-1" numberOfLines={2}>
           {activity.title}
@@ -87,11 +93,11 @@ export default function CategoryScreen() {
           keyExtractor={(item) => `activity-${item.id}`}
           contentContainerStyle={{ padding: 16, paddingTop: 0 }}
           ListEmptyComponent={
-            <View className="py-12 items-center">
-              <Text className="font-body text-stone-gray">
-                No tours found in this category.
-              </Text>
-            </View>
+            <EmptyState
+              icon="folder-open-o"
+              title="No tours found"
+              subtitle="Try another category or explore all tours."
+            />
           }
         />
       )}

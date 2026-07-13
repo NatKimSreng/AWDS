@@ -16,6 +16,8 @@ import { fetchCategories, fetchCities, fetchActivities, type ActivityCard } from
 import { useSettingsStore } from '@/stores/settingsStore';
 import { formatPrice } from '@/lib/formatCurrency';
 import { CurrencyToggle } from '@/components/CurrencyToggle';
+import { ImageWithFallback } from '@/components/ImageWithFallback';
+import { EmptyState } from '@/components/EmptyState';
 
 function ActivityCardItem({
   activity,
@@ -27,9 +29,13 @@ function ActivityCardItem({
   return (
     <Pressable
       onPress={() => router.push(`/activity/${activity.slug}`)}
-      className="bg-white rounded-2xl overflow-hidden shadow-sm mb-4"
+      className="bg-white rounded-2xl overflow-hidden shadow-sm mb-4 active:opacity-90"
     >
-      <View className="h-40 bg-stone-gray/20" />
+      <ImageWithFallback
+        uri={activity.hero_image}
+        containerClassName="h-40 w-full"
+        className="h-40 w-full"
+      />
       <View className="p-4">
         <View className="flex-row items-center mb-1">
           {activity.is_featured && (
@@ -135,8 +141,13 @@ export default function HomeScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-bg justify-center items-center">
-        <ActivityIndicator color="#C8530A" />
+      <SafeAreaView className="flex-1 bg-sand-bg">
+        <View className="px-4 pt-4 pb-2">
+          <Text className="font-heading text-2xl text-stone-charcoal">Explore Angkor</Text>
+        </View>
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator color="#C8530A" />
+        </View>
       </SafeAreaView>
     );
   }
@@ -193,9 +204,11 @@ export default function HomeScreen() {
           </View>
         }
         ListEmptyComponent={
-          <View className="py-12 items-center">
-            <Text className="font-body text-stone-gray">No activities available yet.</Text>
-          </View>
+          <EmptyState
+            icon="map-o"
+            title="No tours available yet"
+            subtitle="Check back soon for new Angkor experiences."
+          />
         }
       />
     </SafeAreaView>

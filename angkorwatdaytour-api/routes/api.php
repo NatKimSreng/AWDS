@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\Public\AvailabilityController as PublicAvailability
 use App\Http\Controllers\Api\Public\CategoryController as PublicCategoryController;
 use App\Http\Controllers\Api\Public\CityController as PublicCityController;
 use App\Http\Controllers\Api\Public\ExchangeRateController;
+use App\Http\Controllers\Api\Public\ProviderController as PublicProviderController;
 use App\Http\Controllers\Api\Public\SearchController;
 use App\Http\Controllers\Api\Public\SettingsController;
 use Illuminate\Support\Facades\Route;
@@ -163,6 +164,10 @@ Route::prefix('public')->group(function () {
 
     Route::get('/cities', [PublicCityController::class, 'index'])->name('public.cities.index');
     Route::get('/cities/{slug}', [PublicCityController::class, 'show'])->name('public.cities.show');
+
+    Route::get('/providers/{provider}', [PublicProviderController::class, 'show'])
+        ->whereNumber('provider')
+        ->name('public.providers.show');
 
     Route::get('/search', [SearchController::class, 'index'])->name('public.search');
 
