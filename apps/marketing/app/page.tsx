@@ -10,8 +10,10 @@ export default function Home() {
           </span>
           <nav className="hidden md:flex gap-6 text-sm text-stone-gray">
             <Link href="/tours" className="hover:text-angkor-orange">Tours</Link>
-            <Link href="/guides" className="hover:text-angkor-orange">Guides</Link>
+            <Link href="/tours" className="hover:text-angkor-orange">Tours</Link>
             <Link href="/blog" className="hover:text-angkor-orange">Travel Guide</Link>
+            <Link href="/about" className="hover:text-angkor-orange">About</Link>
+            <Link href="/contact" className="hover:text-angkor-orange">Contact</Link>
             <Link href="/become-a-provider" className="hover:text-angkor-orange">Become a Provider</Link>
           </nav>
         </div>
