@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -26,8 +27,12 @@ class UserFactory extends Factory
         return [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
+            'phone' => fake()->optional()->phoneNumber(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
+            'role_id' => Role::where('name', Role::CUSTOMER)->firstOrFail()->id,
+            'language_pref' => fake()->randomElement(['en', 'km']),
+            'avatar_url' => fake()->optional()->imageUrl(256, 256, 'people'),
             'remember_token' => Str::random(10),
         ];
     }
@@ -39,6 +44,27 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    public function asCustomer(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role_id' => Role::where('name', Role::CUSTOMER)->firstOrFail()->id,
+        ]);
+    }
+
+    public function asProvider(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role_id' => Role::where('name', Role::PROVIDER)->firstOrFail()->id,
+        ]);
+    }
+
+    public function asAdmin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role_id' => Role::where('name', Role::ADMIN)->firstOrFail()->id,
         ]);
     }
 }

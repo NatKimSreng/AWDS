@@ -10,7 +10,7 @@ A condensed, ordered checklist version of the full build plan. Check off each st
 | 4 | Set up React 18 + Vite projects for Vendor Dashboard and Admin Dashboard | Phase 1 (Wk 1–2) | ☐ |
 | 5 | Set up slim marketing/SEO website (Next.js or WordPress) | Phase 1 (Wk 1–2) | ☐ |
 | 6 | Configure Zustand + TanStack Query, Cloudflare R2 storage, Gmail API OAuth, Git repo + CI | Phase 1 (Wk 1–2) | ☐ |
-| 7 | Write all database migrations (~24 tables) and Eloquent models with relationships | Phase 2 (Wk 2–3) | ☐ |
+| 7 | Write all database migrations (~24 tables) and Eloquent models with relationships | Phase 2 (Wk 2–3) | ☑ |
 | 8 | Seed database (categories, cities, demo activities) and build test factories | Phase 2 (Wk 2–3) | ☐ |
 | 9 | Build auth API — register/login/logout, Google OAuth, email verification, password reset, role middleware | Phase 3 (Wk 3–4) | ☐ |
 | 10 | Build Expo Login/Register/Forgot Password screens + secure token storage | Phase 3 (Wk 3–4) | ☐ |
