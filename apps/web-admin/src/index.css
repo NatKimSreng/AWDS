@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@theme {
+  --color-angkor-orange: #C8530A;
+  --color-angkor-orange-dark: #9C4108;
+  --color-angkor-orange-light: #F3D9C4;
+  --color-stone-charcoal: #2B2622;
+  --color-stone-gray: #6B635C;
+  --color-sand-bg: #FBF7F2;
+  --color-card-white: #FFFFFF;
+  --color-success-green: #2F7D4F;
+  --color-error-red: #B3261E;
+  --color-khmer-gold: #D4AF37;
+
+  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-khmer: 'Noto Sans Khmer', sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-sand-bg);
+  color: var(--color-stone-charcoal);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}

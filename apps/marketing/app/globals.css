@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+:root {
+  --background: #FBF7F2;
+  --foreground: #2B2622;
+  --angkor-orange: #C8530A;
+  --angkor-orange-dark: #9C4108;
+  --angkor-orange-light: #F3D9C4;
+  --stone-charcoal: #2B2622;
+  --stone-gray: #6B635C;
+  --sand-bg: #FBF7F2;
+  --card-white: #FFFFFF;
+  --success-green: #2F7D4F;
+  --error-red: #B3261E;
+  --khmer-gold: #D4AF37;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-angkor-orange: var(--angkor-orange);
+  --color-angkor-orange-dark: var(--angkor-orange-dark);
+  --color-angkor-orange-light: var(--angkor-orange-light);
+  --color-stone-charcoal: var(--stone-charcoal);
+  --color-stone-gray: var(--stone-gray);
+  --color-sand-bg: var(--sand-bg);
+  --color-card-white: var(--card-white);
+  --color-success-green: var(--success-green);
+  --color-error-red: var(--error-red);
+  --color-khmer-gold: var(--khmer-gold);
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-playfair);
+  --font-khmer: var(--font-noto-khmer);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}

@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: angkorwatdaytour-api
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: angkorwatdaytour_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, mysql, redis
+          coverage: none
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist
+      - name: Copy environment file
+        run: cp .env.example .env
+      - name: Generate app key
+        run: php artisan key:generate
+      - name: Run migrations
+        env:
+          DB_DATABASE: angkorwatdaytour_test
+          DB_PASSWORD: root
+        run: php artisan migrate --force
+      - name: Run tests
+        env:
+          DB_DATABASE: angkorwatdaytour_test
+          DB_PASSWORD: root
+        run: php artisan test
+
+  dashboards:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [web-vendor, web-admin]
+    defaults:
+      run:
+        working-directory: apps/${{ matrix.app }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/${{ matrix.app }}/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npm run lint || true
+
+  marketing:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/marketing
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/marketing/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npm run lint || true
