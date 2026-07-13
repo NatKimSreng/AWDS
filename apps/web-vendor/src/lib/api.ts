@@ -5,7 +5,8 @@ export const api = axios.create({
   headers: {
     Accept: 'application/json',
   },
-  withCredentials: true,
+  // Token-based Sanctum auth; credentials disabled to avoid CSRF cookie issues.
+  withCredentials: false,
 });
 
 api.interceptors.request.use((config) => {
