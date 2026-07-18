@@ -7,13 +7,31 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 import { fetchAvailability, AvailabilitySlot, AvailabilityDate } from '@/lib/bookingApi';
 import { formatPrice } from '@/lib/formatCurrency';
 import { useSettingsStore } from '@/stores/settingsStore';
+
+const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+function pad(n: number) {
+  return String(n).padStart(2, '0');
+}
+
+function toDateStr(d: Date) {
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function startOfMonth(d: Date) {
+  return new Date(d.getFullYear(), d.getMonth(), 1);
+}
 
 export default function BookingDateTimeScreen() {
   const { slug, title, basePrice, duration, maxGroup } = useLocalSearchParams<{
@@ -27,17 +45,47 @@ export default function BookingDateTimeScreen() {
   const currency = useSettingsStore((state) => state.currency);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<AvailabilitySlot | null>(null);
+  const [viewMonth, setViewMonth] = useState<Date>(() => startOfMonth(new Date()));
 
   const today = new Date().toISOString().split('T')[0];
   const thirtyDaysFromNow = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
     .toISOString()
     .split('T')[0];
+  const rangeEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['availability', slug, today, thirtyDaysFromNow],
     queryFn: () => fetchAvailability(slug, undefined, today, thirtyDaysFromNow),
     enabled: !!slug,
   });
+
+  const availableMap = useMemo(() => {
+    const map = new Map<string, AvailabilityDate>();
+    if (!data) return map;
+    for (const d of data.dates) {
+      if (d.slots.some((s) => s.remaining > 0)) map.set(d.date, d);
+    }
+    return map;
+  }, [data]);
+
+  const todayStr = toDateStr(new Date());
+  const minView = startOfMonth(new Date());
+  const maxView = startOfMonth(rangeEnd);
+  const canPrev = viewMonth > minView;
+  const canNext = viewMonth < maxView;
+
+  const cells = useMemo(() => {
+    const year = viewMonth.getFullYear();
+    const month = viewMonth.getMonth();
+    const firstWeekday = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const out: (string | null)[] = [];
+    for (let i = 0; i < firstWeekday; i++) out.push(null);
+    for (let d = 1; d <= daysInMonth; d++) out.push(toDateStr(new Date(year, month, d)));
+    return out;
+  }, [viewMonth]);
+
+  const selectedDateItem = selectedDate ? availableMap.get(selectedDate) : undefined;
 
   const handleContinue = () => {
     if (!selectedSlot) return;
@@ -79,8 +127,6 @@ export default function BookingDateTimeScreen() {
     );
   }
 
-  const datesWithSlots = data.dates.filter((d: AvailabilityDate) => d.slots.length > 0);
-
   return (
     <SafeAreaView className="flex-1 bg-sand-bg">
       <View className="px-5 py-4 border-b border-stone-gray/10 bg-white">
@@ -92,83 +138,144 @@ export default function BookingDateTimeScreen() {
       </View>
 
       <ScrollView className="flex-1 px-5 py-4">
-        {datesWithSlots.map((dateItem: AvailabilityDate) => {
-          const isDateSelected = selectedDate === dateItem.date;
+        {/* Month calendar */}
+        <View className="bg-white rounded-2xl p-4 mb-4 shadow-sm">
+          <View className="flex-row items-center justify-between mb-3">
+            <Pressable
+              onPress={() => canPrev && setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() - 1, 1))}
+              disabled={!canPrev}
+              className="w-9 h-9 rounded-full items-center justify-center"
+            >
+              <FontAwesome name="chevron-left" size={16} color={canPrev ? '#2B2622' : '#9CA3AF'} />
+            </Pressable>
+            <Text className="font-heading text-base text-stone-charcoal">
+              {MONTHS[viewMonth.getMonth()]} {viewMonth.getFullYear()}
+            </Text>
+            <Pressable
+              onPress={() => canNext && setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 1))}
+              disabled={!canNext}
+              className="w-9 h-9 rounded-full items-center justify-center"
+            >
+              <FontAwesome name="chevron-right" size={16} color={canNext ? '#2B2622' : '#9CA3AF'} />
+            </Pressable>
+          </View>
 
-          return (
-            <View key={dateItem.date} className="mb-6">
-              <Pressable
-                onPress={() => {
-                  setSelectedDate(isDateSelected ? null : dateItem.date);
-                  setSelectedSlot(null);
-                }}
-                className={`rounded-xl px-4 py-3 mb-3 ${
-                  isDateSelected ? 'bg-angkor-orange' : 'bg-white'
-                }`}
-              >
-                <Text
-                  className={`font-heading text-base ${
-                    isDateSelected ? 'text-white' : 'text-stone-charcoal'
+          <View className="flex-row mb-2">
+            {WEEKDAYS.map((d, i) => (
+              <View key={i} className="flex-1 items-center">
+                <Text className="font-body text-xs text-stone-gray font-medium">{d}</Text>
+              </View>
+            ))}
+          </View>
+
+          <View className="flex-row flex-wrap">
+            {cells.map((dateStr, i) => {
+              if (!dateStr) return <View key={`b-${i}`} className="w-[14.28%] aspect-square" />;
+              const isPast = dateStr < todayStr;
+              const dateItem = availableMap.get(dateStr);
+              const isAvailable = !!dateItem && !isPast;
+              const isSelected = selectedDate === dateStr;
+
+              return (
+                <Pressable
+                  key={dateStr}
+                  onPress={() => {
+                    if (!isAvailable) return;
+                    setSelectedDate(isSelected ? null : dateStr);
+                    setSelectedSlot(null);
+                  }}
+                  disabled={!isAvailable}
+                  className={`w-[14.28%] aspect-square items-center justify-center rounded-lg ${
+                    isSelected
+                      ? 'bg-angkor-orange'
+                      : isAvailable
+                        ? 'bg-angkor-orange/15'
+                        : ''
                   }`}
                 >
-                  {new Date(dateItem.date).toLocaleDateString(undefined, {
-                    weekday: 'short',
-                    month: 'short',
-                    day: 'numeric',
-                  })}
-                </Text>
-              </Pressable>
+                  <Text
+                    className={`font-body text-sm ${
+                      isSelected
+                        ? 'text-white font-bold'
+                        : isAvailable
+                          ? 'text-angkor-orange font-semibold'
+                          : isPast
+                            ? 'text-stone-gray/30'
+                            : 'text-stone-gray/40'
+                    }`}
+                  >
+                    {Number(dateStr.slice(8))}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
 
-              {isDateSelected && (
-                <View className="flex-row flex-wrap gap-3">
-                  {dateItem.slots.map((slot: AvailabilitySlot) => {
-                    const isSlotSelected = selectedSlot?.id === slot.id;
-                    const disabled = slot.remaining === 0;
-
-                    return (
-                      <Pressable
-                        key={slot.id}
-                        disabled={disabled}
-                        onPress={() => setSelectedSlot(isSlotSelected ? null : slot)}
-                        className={`rounded-xl px-4 py-3 min-w-[140px] ${
-                          disabled
-                            ? 'bg-stone-gray/20'
-                            : isSlotSelected
-                              ? 'bg-angkor-orange'
-                              : 'bg-white'
-                        }`}
-                      >
-                        <Text
-                          className={`font-body font-semibold ${
-                            disabled
-                              ? 'text-stone-gray/50'
-                              : isSlotSelected
-                                ? 'text-white'
-                                : 'text-stone-charcoal'
-                          }`}
-                        >
-                          {slot.start_time}
-                          {slot.end_time ? ` - ${slot.end_time}` : ''}
-                        </Text>
-                        <Text
-                          className={`font-body text-xs mt-1 ${
-                            disabled
-                              ? 'text-stone-gray/40'
-                              : isSlotSelected
-                                ? 'text-white/80'
-                                : 'text-stone-gray'
-                          }`}
-                        >
-                          {slot.remaining} left
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              )}
+          <View className="flex-row mt-3 pt-3 border-t border-stone-gray/10">
+            <View className="flex-row items-center mr-4">
+              <View className="w-3 h-3 rounded bg-angkor-orange/15 mr-1.5" />
+              <Text className="font-body text-xs text-stone-gray">Available</Text>
             </View>
-          );
-        })}
+            <View className="flex-row items-center">
+              <View className="w-3 h-3 rounded bg-angkor-orange mr-1.5" />
+              <Text className="font-body text-xs text-stone-gray">Selected</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Time slots for selected date */}
+        {selectedDateItem && (
+          <View className="bg-white rounded-2xl p-4 mb-4 shadow-sm">
+            <Text className="font-heading text-base text-stone-charcoal mb-3">
+              Available start times
+            </Text>
+            <View className="flex-row flex-wrap">
+              {selectedDateItem.slots.map((slot: AvailabilitySlot) => {
+                const isSlotSelected = selectedSlot?.id === slot.id;
+                const disabled = slot.remaining === 0;
+
+                return (
+                  <Pressable
+                    key={slot.id}
+                    disabled={disabled}
+                    onPress={() => setSelectedSlot(isSlotSelected ? null : slot)}
+                    className={`rounded-xl px-4 py-3 min-w-[140px] mr-3 mb-3 ${
+                      disabled
+                        ? 'bg-stone-gray/20'
+                        : isSlotSelected
+                          ? 'bg-angkor-orange'
+                          : 'bg-sand-bg border border-stone-gray/15'
+                    }`}
+                  >
+                    <Text
+                      className={`font-body font-semibold ${
+                        disabled
+                          ? 'text-stone-gray/50'
+                          : isSlotSelected
+                            ? 'text-white'
+                            : 'text-stone-charcoal'
+                      }`}
+                    >
+                      {slot.start_time}
+                      {slot.end_time ? ` - ${slot.end_time}` : ''}
+                    </Text>
+                    <Text
+                      className={`font-body text-xs mt-1 ${
+                        disabled
+                          ? 'text-stone-gray/40'
+                          : isSlotSelected
+                            ? 'text-white/80'
+                            : 'text-stone-gray'
+                      }`}
+                    >
+                      {slot.remaining} left
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        )}
       </ScrollView>
 
       <View className="bg-white border-t border-stone-gray/20 p-4">

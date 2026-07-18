@@ -6,13 +6,13 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
-  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 
 import { fetchMyBookings, BookingListItem, MyBookingsResponse } from '@/lib/bookingApi';
+import { ImageWithFallback } from '@/components/ImageWithFallback';
 
 const statusStyles: Record<string, string> = {
   pending: 'bg-amber-100 text-amber-800',
@@ -42,17 +42,12 @@ function BookingCard({ booking }: { booking: BookingListItem }) {
       className="bg-card-white rounded-xl p-4 mb-3 shadow-sm border border-stone-gray/10"
     >
       <View className="flex-row items-start gap-3">
-        {booking.activity?.hero_image?.image_url ? (
-          <Image
-            source={{ uri: booking.activity.hero_image.image_url }}
-            className="w-16 h-16 rounded-lg bg-sand-bg"
-            resizeMode="cover"
-          />
-        ) : (
-          <View className="w-16 h-16 rounded-lg bg-sand-bg items-center justify-center">
-            <Text className="text-angkor-orange text-xl">🎫</Text>
-          </View>
-        )}
+        <ImageWithFallback
+          uri={booking.activity?.hero_image?.image_url}
+          containerClassName="w-16 h-16 rounded-lg bg-sand-bg"
+          className="w-16 h-16 rounded-lg"
+          resizeMode="cover"
+        />
 
         <View className="flex-1">
           <View className="flex-row items-center justify-between mb-1">

@@ -5,8 +5,9 @@ import {
   ScrollView,
   Pressable,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useState } from 'react';
@@ -20,6 +21,24 @@ import { fetchFavoriteStatus, toggleFavorite } from '@/lib/favoriteApi';
 import { fetchPublicReviews, PublicReview, ReviewImage } from '@/lib/reviewApi';
 import { ImageWithFallback } from '@/components/ImageWithFallback';
 import { EmptyState } from '@/components/EmptyState';
+
+function splitList(value: unknown): string[] {
+  if (typeof value !== 'string' || !value) return [];
+  return value
+    .split('\n')
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function staticMapUrl(lat: number, lng: number, w = 380, h = 200): string {
+  return `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=15&size=${w}x${h}&maptype=mapnik&markers=${lat},${lng},red-pushpin`;
+}
+
+function openInMaps(lat: number, lng: number) {
+  Linking.openURL(
+    `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=16/${lat}/${lng}`
+  ).catch(() => {});
+}
 
 export default function ActivityDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -60,6 +79,8 @@ export default function ActivityDetailScreen() {
     },
   });
 
+  const insets = useSafeAreaInsets();
+
   const { data: reviewsResponse } = useQuery({
     queryKey: ['activity-reviews', slug],
     queryFn: () => fetchPublicReviews(slug),
@@ -68,6 +89,19 @@ export default function ActivityDetailScreen() {
 
   const reviews = reviewsResponse?.data ?? [];
   const gallery = (activity?.gallery as string[] | undefined) ?? [];
+
+  const description = (activity?.description as string | undefined) ?? '';
+  const highlights =
+    (activity?.highlights as string[] | undefined) ??
+    (description
+      ? (description.match(/[^.!?]+[.!?]+/g) ?? []).slice(0, 3).map((s) => s.trim())
+      : []);
+  const inclusions = splitList(activity?.inclusions);
+  const exclusions = splitList(activity?.exclusions);
+  const meetingPoint = activity?.meeting_point as
+    | { address?: string; lat?: number; lng?: number }
+    | null;
+  const hasCoords = !!meetingPoint?.lat && !!meetingPoint?.lng;
 
   if (isLoading) {
     return (
@@ -95,7 +129,7 @@ export default function ActivityDetailScreen() {
   const languages = ((activity.spoken_languages as string[]) ?? []).join(', ').toUpperCase();
 
   return (
-    <SafeAreaView className="flex-1 bg-sand-bg">
+    <SafeAreaView edges={['top', 'left', 'right']} className="flex-1 bg-sand-bg">
       <ScrollView className="flex-1">
         <View className="relative">
           <ImageWithFallback
@@ -143,7 +177,7 @@ export default function ActivityDetailScreen() {
           </ScrollView>
         )}
 
-        <View className="p-5 pb-24">
+        <View className="p-5 pb-28">
           <View className="flex-row flex-wrap items-center gap-2 mb-3">
             <Text className="font-body text-sm text-stone-gray">
               {(activity.category as { name: string } | null)?.name} ·{' '}
@@ -198,11 +232,76 @@ export default function ActivityDetailScreen() {
             </View>
           )}
 
+          {highlights.length > 0 && (
+            <View className="bg-white rounded-2xl p-4 shadow-sm mb-4">
+              <Text className="font-heading text-lg text-stone-charcoal mb-3">Highlights</Text>
+              {highlights.map((item: string, idx: number) => (
+                <View key={idx} className="flex-row mb-2.5 last:mb-0">
+                  <FontAwesome name="check-circle" size={16} color="#C8530A" />
+                  <Text className="font-body text-stone-charcoal flex-1 ml-2 leading-5">
+                    {item}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {(inclusions.length > 0 || exclusions.length > 0) && (
+            <View className="bg-white rounded-2xl p-4 shadow-sm mb-4">
+              <Text className="font-heading text-lg text-stone-charcoal mb-3">
+                What's included
+              </Text>
+              {inclusions.length > 0 && (
+                <View className="mb-3">
+                  <Text className="font-body text-sm text-stone-gray mb-2">Included</Text>
+                  {inclusions.map((item: string, idx: number) => (
+                    <View key={`in-${idx}`} className="flex-row mb-2 last:mb-0">
+                      <FontAwesome name="check" size={14} color="#2F7D4F" />
+                      <Text className="font-body text-stone-charcoal flex-1 ml-2 leading-5">
+                        {item}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+              {exclusions.length > 0 && (
+                <View>
+                  <Text className="font-body text-sm text-stone-gray mb-2">Not included</Text>
+                  {exclusions.map((item: string, idx: number) => (
+                    <View key={`ex-${idx}`} className="flex-row mb-2 last:mb-0">
+                      <FontAwesome name="times" size={14} color="#B3261E" />
+                      <Text className="font-body text-stone-charcoal flex-1 ml-2 leading-5">
+                        {item}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+          )}
+
           <View className="bg-white rounded-2xl p-4 shadow-sm mb-4">
             <Text className="font-heading text-lg text-stone-charcoal mb-2">Meeting Point</Text>
-            <Text className="font-body text-stone-gray">
-              {((activity.meeting_point as Record<string, string> | null)?.address) ?? 'Not specified'}
+            <Text className="font-body text-stone-gray mb-3">
+              {meetingPoint?.address ?? 'Not specified'}
             </Text>
+            {hasCoords ? (
+              <Pressable onPress={() => openInMaps(meetingPoint!.lat!, meetingPoint!.lng!)}>
+                <ImageWithFallback
+                  uri={staticMapUrl(meetingPoint!.lat!, meetingPoint!.lng!)}
+                  containerClassName="h-48 w-full rounded-xl"
+                  className="h-48 w-full rounded-xl"
+                  resizeMode="cover"
+                />
+                <Text className="font-body text-angkor-orange text-sm mt-2 text-center font-semibold">
+                  Open in Maps →
+                </Text>
+              </Pressable>
+            ) : (
+              <Text className="font-body text-stone-gray text-sm">
+                Exact location will be confirmed after booking.
+              </Text>
+            )}
           </View>
 
           {languages && (
@@ -275,16 +374,31 @@ export default function ActivityDetailScreen() {
                 </View>
               ))
             )}
+
+            {reviews.length > 0 && (
+              <Pressable
+                onPress={() => router.push(`/activity-reviews/${activity.slug as string}` as never)}
+                className="mt-2 self-start active:opacity-70"
+              >
+                <Text className="font-body text-angkor-orange font-semibold">
+                  See all reviews →
+                </Text>
+              </Pressable>
+            )}
           </View>
         </View>
       </ScrollView>
 
-      <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-stone-gray/20 p-4 flex-row items-center justify-between">
+      <View
+        className="absolute bottom-0 left-0 right-0 bg-white border-t border-stone-gray/20 px-4 pt-3 flex-row items-center justify-between"
+        style={{ paddingBottom: Math.max(insets.bottom, 12) }}
+      >
         <View>
-          <Text className="font-body text-stone-gray text-sm">From</Text>
+          <Text className="font-body text-stone-gray text-xs">From</Text>
           <Text className="font-heading text-xl text-angkor-orange">
             {formatPrice(activity.base_price_usd as string, currency)}
           </Text>
+          <Text className="font-body text-stone-gray text-[10px]">per person</Text>
         </View>
         <Pressable
           onPress={() =>
@@ -299,9 +413,9 @@ export default function ActivityDetailScreen() {
               },
             })
           }
-          className="bg-angkor-orange rounded-xl px-6 py-3 active:bg-angkor-orange-dark"
+          className="bg-angkor-orange rounded-xl px-7 py-3.5 active:bg-angkor-orange-dark"
         >
-          <Text className="font-body text-white font-semibold">Check Availability</Text>
+          <Text className="font-body text-white font-semibold text-base">Check Availability</Text>
         </Pressable>
       </View>
     </SafeAreaView>

@@ -29,41 +29,41 @@ function ActivityCardItem({
   return (
     <Pressable
       onPress={() => router.push(`/activity/${activity.slug}`)}
-      className="bg-white rounded-2xl overflow-hidden shadow-sm mb-4 active:opacity-90"
+      className="bg-white rounded-2xl overflow-hidden shadow-sm active:opacity-90 flex-1"
     >
-      <ImageWithFallback
-        uri={activity.hero_image}
-        containerClassName="h-40 w-full"
-        className="h-40 w-full"
-      />
-      <View className="p-4">
-        <View className="flex-row items-center mb-1">
-          {activity.is_featured && (
-            <View className="bg-khmer-gold/20 rounded-full px-2 py-0.5 mr-2">
-              <Text className="font-body text-xs text-khmer-gold font-semibold">Featured</Text>
-            </View>
-          )}
-          <Text className="font-body text-xs text-stone-gray">
-            {activity.category?.name} · {activity.city?.name}
-          </Text>
-        </View>
-        <Text className="font-heading text-lg text-stone-charcoal mb-1" numberOfLines={2}>
+      <View className="relative">
+        <ImageWithFallback
+          uri={activity.hero_image}
+          containerClassName="h-32 w-full"
+          className="h-32 w-full"
+        />
+        {activity.is_featured && (
+          <View className="absolute top-2 left-2 bg-khmer-gold rounded-full px-2 py-0.5">
+            <Text className="font-body text-[10px] text-white font-semibold">Featured</Text>
+          </View>
+        )}
+      </View>
+      <View className="p-3.5">
+        <Text className="font-body text-[10px] text-stone-gray mb-1" numberOfLines={1}>
+          {activity.category?.name} · {activity.city?.name}
+        </Text>
+        <Text className="font-heading text-sm text-stone-charcoal mb-2" numberOfLines={2} style={{ minHeight: 34 }}>
           {activity.title}
         </Text>
-        <View className="flex-row items-center justify-between mt-2">
+        <View className="flex-row items-center mb-2">
+          <FontAwesome name="star" size={11} color="#D4AF37" />
+          <Text className="font-body text-xs text-stone-gray ml-1">
+            {activity.avg_rating} ({activity.reviews_count})
+          </Text>
+        </View>
+        <View className="flex-row items-center justify-between">
           <View className="flex-row items-center">
-            <FontAwesome name="clock-o" size={14} color="#6B635C" />
-            <Text className="font-body text-sm text-stone-gray ml-1">
+            <FontAwesome name="clock-o" size={11} color="#6B635C" />
+            <Text className="font-body text-xs text-stone-gray ml-1">
               {Math.round(activity.duration_minutes / 60)}h
             </Text>
           </View>
-          <View className="flex-row items-center">
-            <FontAwesome name="star" size={14} color="#D4AF37" />
-            <Text className="font-body text-sm text-stone-gray ml-1">
-              {activity.avg_rating} ({activity.reviews_count})
-            </Text>
-          </View>
-          <Text className="font-body text-angkor-orange font-semibold">
+          <Text className="font-body text-angkor-orange font-bold text-sm">
             {formatPrice(activity.base_price_usd, currency)}
           </Text>
         </View>
@@ -158,25 +158,34 @@ export default function HomeScreen() {
         data={activitiesPage?.data ?? []}
         renderItem={renderActivity}
         keyExtractor={(item) => `activity-${item.id}`}
-        contentContainerStyle={{ padding: 16, paddingTop: 8 }}
+        numColumns={2}
+        columnWrapperStyle={{ justifyContent: 'space-between', marginBottom: 16 }}
+        contentContainerStyle={{ padding: 16, paddingTop: 8, paddingBottom: 28 }}
         refreshControl={<RefreshControl refreshing={isLoading} onRefresh={onRefresh} tintColor="#C8530A" />}
         ListHeaderComponent={
-          <View className="mb-4">
-            <View className="flex-row items-center justify-between mb-4">
-              <Text className="font-heading text-2xl text-stone-charcoal">Explore Angkor</Text>
+          <View className="mb-3">
+            <View className="flex-row items-center justify-between mb-3">
+              <View>
+                <Text className="font-heading text-2xl text-stone-charcoal">Explore Angkor</Text>
+                <Text className="font-body text-xs text-stone-gray mt-0.5">
+                  Discover tours in Siem Reap
+                </Text>
+              </View>
               <View className="flex-row items-center">
-                <View className="w-24 mr-3">
+                <View className="w-24 mr-2">
                   <CurrencyToggle />
                 </View>
-                <Pressable onPress={() => router.push('/search')}>
-                  <FontAwesome name="search" size={22} color="#C8530A" />
+                <Pressable
+                  onPress={() => router.push('/search')}
+                  className="w-10 h-10 rounded-full bg-angkor-orange/10 items-center justify-center active:bg-angkor-orange/20"
+                >
+                  <FontAwesome name="search" size={18} color="#C8530A" />
                 </Pressable>
               </View>
             </View>
 
             {categories && categories.length > 0 && (
-              <View className="mb-4">
-                <Text className="font-heading text-lg text-stone-charcoal mb-2">Categories</Text>
+              <View className="mb-3">
                 <FlatList
                   data={categories}
                   renderItem={renderCategory}
@@ -188,8 +197,7 @@ export default function HomeScreen() {
             )}
 
             {cities && cities.length > 0 && (
-              <View className="mb-4">
-                <Text className="font-heading text-lg text-stone-charcoal mb-2">Destinations</Text>
+              <View className="mb-3">
                 <FlatList
                   data={cities}
                   renderItem={renderCity}
@@ -200,7 +208,7 @@ export default function HomeScreen() {
               </View>
             )}
 
-            <Text className="font-heading text-lg text-stone-charcoal mb-2">Featured Tours</Text>
+            <Text className="font-heading text-base text-stone-charcoal mb-1">All tours</Text>
           </View>
         }
         ListEmptyComponent={

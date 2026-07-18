@@ -129,6 +129,7 @@ function RootLayoutNav() {
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="category/[slug]" options={{ headerShown: false }} />
             <Stack.Screen name="activity/[slug]" options={{ headerShown: false }} />
+            <Stack.Screen name="activity-reviews/[slug]" options={{ headerShown: false }} />
             <Stack.Screen name="provider/[id]" options={{ headerShown: false }} />
             <Stack.Screen name="favorites" options={{ headerShown: false }} />
             <Stack.Screen name="support" options={{ headerShown: false }} />
