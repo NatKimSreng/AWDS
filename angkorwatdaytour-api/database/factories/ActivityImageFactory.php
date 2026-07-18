@@ -29,16 +29,16 @@ class ActivityImageFactory extends Factory
     private function travelImageUrl(int $width, int $height): string
     {
         $ids = [
-            '1518509569233-3c8b915e781f',
-            '1528127269322-539801943592',
-            '1555993539-1732b0258235',
-            '1569949381662-eb82be2a6f11',
-            '1534234828563-025cf17ebb8d',
-            '1528360983277-13d401cdc186',
-            '1545569341-9eb8b30979d9',
-            '1469854523086-cc02fe5d8800',
-            '1500530855697-b7d8d2cf6f3e',
-            '1476514525535-07fb3b4ae5f1',
+            '1770848125591-2e97455bf21d', // Angkor Wat sunrise
+            '1762091486050-5be11ee3c8d7', // Phnom Penh Royal Palace
+            '1661487906939-aea1f059b84f', // Kampot river
+            '1700155024603-771638efc72f', // Battambang town
+            '1762270753499-e6f87335d754', // Bayon faces
+            '1770848126209-465ea630f630', // Ta Prohm roots
+            '1757756170752-472097c4e565', // Tonlé Sap village
+            '1636474333831-6d2aa38cc501', // Cambodia countryside cycling
+            '1653959864991-c828b72c82a8', // Cambodian sunset
+            '1593009579715-ccb8bed049b5', // Cambodia night market
         ];
 
         $id = $ids[array_rand($ids)];

@@ -30,8 +30,17 @@ class Activity extends Model
         'status',
         'is_featured',
         'is_instant_book',
+        'is_refundable',
+        'free_cancellation_hours',
         'spoken_languages',
         'published_at',
+        'what_to_bring',
+        'not_allowed',
+        'know_before_you_go',
+        'additional_info',
+        'not_suitable_for',
+        'weather_policy',
+        'start_time_flexibility',
     ];
 
     protected function casts(): array
@@ -47,6 +56,8 @@ class Activity extends Model
             'max_group' => 'integer',
             'is_featured' => 'boolean',
             'is_instant_book' => 'boolean',
+            'is_refundable' => 'boolean',
+            'free_cancellation_hours' => 'integer',
             'published_at' => 'datetime',
         ];
     }

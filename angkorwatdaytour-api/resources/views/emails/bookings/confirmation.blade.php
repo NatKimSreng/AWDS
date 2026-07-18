@@ -1,7 +1,7 @@
 @component('mail::message')
 # Booking confirmed
 
-Hi {{ $booking->user->name }},
+Hi {{ $booking->guest_name ?? $booking->user->name ?? 'Traveler' }},
 
 Thank you for booking with AngkorWatDayTour. Here are your trip details:
 
