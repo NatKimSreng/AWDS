@@ -1,11 +1,16 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+interface Role {
+  id: number;
+  name: string;
+}
+
 interface User {
   id: number;
   name: string;
   email: string;
-  role: string;
+  role: Role;
   avatar_url?: string | null;
 }
 

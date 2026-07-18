@@ -11,6 +11,12 @@ use App\Http\Controllers\Api\BookingCancellationController;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\AiChatController;
+use App\Http\Controllers\Api\Admin\BookingController as AdminBookingController;
+use App\Http\Controllers\Api\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Api\Admin\ListingController as AdminListingController;
+use App\Http\Controllers\Api\Admin\ProviderController as AdminProviderController;
+use App\Http\Controllers\Api\Admin\PayoutController as AdminPayoutController;
+use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\MessageThreadController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProviderOnboardingController;
@@ -18,9 +24,11 @@ use App\Http\Controllers\Api\Public\ActivityController as PublicActivityControll
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\TicketController;
 use App\Http\Controllers\Api\Public\AvailabilityController as PublicAvailabilityController;
+use App\Http\Controllers\Api\Public\BookingController as PublicBookingController;
 use App\Http\Controllers\Api\Public\CategoryController as PublicCategoryController;
 use App\Http\Controllers\Api\Public\CityController as PublicCityController;
 use App\Http\Controllers\Api\Public\ExchangeRateController;
+use App\Http\Controllers\Api\Public\PaymentController as PublicPaymentController;
 use App\Http\Controllers\Api\Public\ProviderController as PublicProviderController;
 use App\Http\Controllers\Api\Public\SearchController;
 use App\Http\Controllers\Api\Public\SettingsController;
@@ -187,7 +195,29 @@ Route::middleware(['auth:sanctum', 'role:provider', 'approved_provider'])->prefi
 });
 
 Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
-    Route::get('/dashboard', fn () => response()->json(['message' => 'Admin dashboard']))->name('admin.dashboard');
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+
+    Route::get('/providers', [AdminProviderController::class, 'index'])->name('admin.providers.index');
+    Route::get('/providers/{provider}', [AdminProviderController::class, 'show'])->whereNumber('provider')->name('admin.providers.show');
+    Route::post('/providers/{provider}/approve', [AdminProviderController::class, 'approve'])->whereNumber('provider')->name('admin.providers.approve');
+    Route::post('/providers/{provider}/reject', [AdminProviderController::class, 'reject'])->whereNumber('provider')->name('admin.providers.reject');
+    Route::post('/providers/{provider}/toggle-featured', [AdminProviderController::class, 'toggleFeatured'])->whereNumber('provider')->name('admin.providers.toggle-featured');
+
+    Route::get('/listings', [AdminListingController::class, 'index'])->name('admin.listings.index');
+    Route::get('/listings/{listing}', [AdminListingController::class, 'show'])->whereNumber('listing')->name('admin.listings.show');
+    Route::post('/listings/{listing}/status', [AdminListingController::class, 'updateStatus'])->whereNumber('listing')->name('admin.listings.status');
+    Route::post('/listings/{listing}/toggle-featured', [AdminListingController::class, 'toggleFeatured'])->whereNumber('listing')->name('admin.listings.toggle-featured');
+    Route::delete('/listings/{listing}', [AdminListingController::class, 'destroy'])->whereNumber('listing')->name('admin.listings.destroy');
+
+    Route::get('/bookings', [AdminBookingController::class, 'index'])->name('admin.bookings.index');
+    Route::get('/bookings/{booking}', [AdminBookingController::class, 'show'])->whereNumber('booking')->name('admin.bookings.show');
+    Route::post('/bookings/{booking}/status', [AdminBookingController::class, 'updateStatus'])->whereNumber('booking')->name('admin.bookings.status');
+
+    Route::get('/payouts', [AdminPayoutController::class, 'index'])->name('admin.payouts.index');
+    Route::post('/payouts', [AdminPayoutController::class, 'store'])->name('admin.payouts.store');
+    Route::post('/payouts/{payout}/mark-paid', [AdminPayoutController::class, 'markPaid'])->whereNumber('payout')->name('admin.payouts.mark-paid');
+
+    Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users.index');
 });
 
 /*
@@ -222,4 +252,15 @@ Route::prefix('public')->group(function () {
 
     Route::get('/activities/{slug}/reviews', [ReviewController::class, 'publicForActivity'])
         ->name('public.activities.reviews');
+
+    Route::post('/bookings', [PublicBookingController::class, 'store'])->name('public.bookings.store');
+    Route::get('/bookings/{booking_ref}', [PublicBookingController::class, 'show'])->name('public.bookings.show');
+    Route::post('/bookings/{booking_ref}/ticket', [PublicBookingController::class, 'ticket'])->name('public.bookings.ticket');
+    Route::post('/bookings/{booking_ref}/send-confirmation-email', [PublicBookingController::class, 'sendConfirmationEmail'])
+        ->name('public.bookings.confirmation-email.send');
+    Route::post('/bookings/{booking_ref}/payments/khqr', [PublicBookingController::class, 'khqr'])
+        ->name('public.payments.khqr.generate');
+
+    Route::get('/payments/{payment}/khqr-status', [PublicPaymentController::class, 'khqrStatus'])
+        ->name('public.payments.khqr.status');
 });
