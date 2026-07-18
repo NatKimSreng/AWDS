@@ -25,7 +25,7 @@ function ApprovedProviderRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (user?.role !== 'provider') {
+  if (user?.role?.name !== 'provider') {
     return <Navigate to="/login" replace />;
   }
 

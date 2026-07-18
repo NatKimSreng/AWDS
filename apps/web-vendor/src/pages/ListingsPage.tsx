@@ -118,7 +118,7 @@ export default function ListingsPage() {
                 </p>
                 <div className="flex items-center justify-between">
                   <p className="text-lg font-bold text-stone-charcoal">
-                    ${listing.base_price_usd.toFixed(2)}
+                    ${Number(listing.base_price_usd).toFixed(2)}
                   </p>
                   <div className="flex gap-2">
                     <button

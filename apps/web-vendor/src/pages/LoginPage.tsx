@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, Loader2 } from 'lucide-react';
 
 import { api } from '../lib/api';
@@ -10,6 +11,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const setAuth = useAuthStore((state) => state.setAuth);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +27,7 @@ export default function LoginPage() {
 
       const { user, token } = response.data;
       setAuth(user, token);
-      window.location.href = '/';
+      navigate('/');
     } catch (err: any) {
       const message = err?.response?.data?.message ?? 'Login failed. Please try again.';
       setError(message);

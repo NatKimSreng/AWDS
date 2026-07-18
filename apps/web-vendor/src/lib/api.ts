@@ -106,7 +106,7 @@ export interface VendorListing {
   duration_minutes: number;
   min_group: number;
   max_group: number;
-  base_price_usd: number;
+  base_price_usd: number | string;
   status: string;
   is_instant_book: boolean;
   is_featured: boolean;
@@ -154,8 +154,8 @@ export interface VendorBooking {
   booking_date: string | null;
   booking_time: string | null;
   traveler_count: number;
-  total_price: number;
-  commission_amount: number;
+  total_price: number | string;
+  commission_amount: number | string;
   currency: string;
   payment_method: string | null;
   special_requests: string | null;
@@ -175,15 +175,15 @@ export interface VendorBooking {
 }
 
 export interface VendorEarningSummary {
-  gross: number;
-  commission: number;
-  net: number;
+  gross: number | string;
+  commission: number | string;
+  net: number | string;
   bookings: number;
   monthly: Array<{
     month: string;
-    gross: number;
-    commission: number;
-    net: number;
+    gross: number | string;
+    commission: number | string;
+    net: number | string;
     bookings: number;
   }>;
 }
@@ -192,9 +192,9 @@ export interface VendorPayout {
   id: number;
   period_start: string;
   period_end: string;
-  gross_amount: number;
-  commission: number;
-  net_amount: number;
+  gross_amount: number | string;
+  commission: number | string;
+  net_amount: number | string;
   status: string;
   payout_method: string | null;
   transaction_ref: string | null;

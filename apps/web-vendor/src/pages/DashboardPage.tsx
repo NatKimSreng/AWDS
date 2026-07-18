@@ -60,7 +60,7 @@ export default function DashboardPage() {
         <StatCard label="Total Listings" value={stats.total_listings} icon={List} color="orange" />
         <StatCard label="Live Listings" value={stats.live_listings} icon={LayoutDashboard} color="green" />
         <StatCard label="Total Bookings" value={stats.total_bookings} icon={CalendarCheck} color="blue" />
-        <StatCard label="Current Balance" value={`$${stats.current_balance.toFixed(2)}`} icon={Wallet} color="green" />
+        <StatCard label="Current Balance" value={`$${Number(stats.current_balance).toFixed(2)}`} icon={Wallet} color="green" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

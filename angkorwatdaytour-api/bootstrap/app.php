@@ -17,9 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'approved_provider' => \App\Http\Middleware\EnsureApprovedProvider::class,
         ]);
 
-        $middleware->api(prepend: [
-            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-        ]);
+        // Token-based Sanctum auth (mobile + dashboard SPAs); no stateful cookie/CSRF flow.
+        // $middleware->api(prepend: [
+        //     \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+        // ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

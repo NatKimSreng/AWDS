@@ -7,6 +7,7 @@ import { getListing, createListing, updateListing, type VendorListing } from '..
 const STATUS_OPTIONS = [
   { value: 'draft', label: 'Draft' },
   { value: 'pending', label: 'Pending review' },
+  { value: 'live', label: 'Live' },
   { value: 'paused', label: 'Paused' },
 ];
 

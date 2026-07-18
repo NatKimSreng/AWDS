@@ -45,19 +45,19 @@ export default function EarningsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Gross earnings"
-          value={`$${(earnings?.gross ?? 0).toFixed(2)}`}
+          value={`$${Number(earnings?.gross ?? 0).toFixed(2)}`}
           icon={DollarSign}
           color="orange"
         />
         <StatCard
           label="Commission"
-          value={`$${(earnings?.commission ?? 0).toFixed(2)}`}
+          value={`$${Number(earnings?.commission ?? 0).toFixed(2)}`}
           icon={TrendingUp}
           color="gray"
         />
         <StatCard
           label="Net earnings"
-          value={`$${(earnings?.net ?? 0).toFixed(2)}`}
+          value={`$${Number(earnings?.net ?? 0).toFixed(2)}`}
           icon={DollarSign}
           color="green"
         />
@@ -90,10 +90,10 @@ export default function EarningsPage() {
                   <tr key={m.month}>
                     <td className="px-4 py-3 text-stone-charcoal">{m.month}</td>
                     <td className="px-4 py-3 text-right text-stone-gray">{m.bookings}</td>
-                    <td className="px-4 py-3 text-right text-stone-gray">${m.gross.toFixed(2)}</td>
-                    <td className="px-4 py-3 text-right text-stone-gray">${m.commission.toFixed(2)}</td>
+                    <td className="px-4 py-3 text-right text-stone-gray">${Number(m.gross).toFixed(2)}</td>
+                    <td className="px-4 py-3 text-right text-stone-gray">${Number(m.commission).toFixed(2)}</td>
                     <td className="px-4 py-3 text-right font-medium text-stone-charcoal">
-                      ${m.net.toFixed(2)}
+                      ${Number(m.net).toFixed(2)}
                     </td>
                   </tr>
                 ))}
@@ -126,9 +126,9 @@ export default function EarningsPage() {
                     <td className="px-4 py-3 text-stone-charcoal">
                       {p.period_start} → {p.period_end}
                     </td>
-                    <td className="px-4 py-3 text-right text-stone-gray">${p.gross_amount.toFixed(2)}</td>
-                    <td className="px-4 py-3 text-right text-stone-gray">${p.commission.toFixed(2)}</td>
-                    <td className="px-4 py-3 text-right font-medium text-stone-charcoal">${p.net_amount.toFixed(2)}</td>
+                    <td className="px-4 py-3 text-right text-stone-gray">${Number(p.gross_amount).toFixed(2)}</td>
+                    <td className="px-4 py-3 text-right text-stone-gray">${Number(p.commission).toFixed(2)}</td>
+                    <td className="px-4 py-3 text-right font-medium text-stone-charcoal">${Number(p.net_amount).toFixed(2)}</td>
                     <td className="px-4 py-3">
                       <span
                         className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium capitalize ${
