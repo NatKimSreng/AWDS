@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Role;
+use App\Helpers\SeederImageHelper;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -32,7 +33,7 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'role_id' => Role::where('name', Role::CUSTOMER)->firstOrFail()->id,
             'language_pref' => fake()->randomElement(['en', 'km']),
-            'avatar_url' => fake()->optional()->imageUrl(256, 256, 'people'),
+            'avatar_url' => fake()->boolean(70) ? SeederImageHelper::peopleImageUrl(256, 256) : null,
             'remember_token' => Str::random(10),
         ];
     }

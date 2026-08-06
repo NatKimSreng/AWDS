@@ -33,7 +33,15 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow AngkorWatDayTour to save tour photos and QR tickets to your gallery.",
+          "savePhotosPermission": "Allow AngkorWatDayTour to save tour photos and QR tickets to your gallery.",
+          "isAccessMediaLocationEnabled": true
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

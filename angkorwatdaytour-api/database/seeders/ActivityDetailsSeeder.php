@@ -280,6 +280,23 @@ class ActivityDetailsSeeder extends Seeder
             ],
         ];
 
+        // Realistic meeting-point coordinates for demo map rendering.
+        $coordinates = [
+            'magical-sunrise-angkor-wat' => ['lat' => 13.4125, 'lng' => 103.8670],
+            'hidden-temples-tuktuk' => ['lat' => 13.4610, 'lng' => 103.8720],
+            'bayon-ta-prohm-full-day' => ['lat' => 13.4410, 'lng' => 103.8580],
+            'evening-street-food-walk' => ['lat' => 13.3550, 'lng' => 103.8550],
+            'cooking-class-market-visit' => ['lat' => 13.3610, 'lng' => 103.8610],
+            'countryside-cycling-tour' => ['lat' => 13.3800, 'lng' => 103.8800],
+            'sunset-quad-bike-ride' => ['lat' => 13.3200, 'lng' => 103.9200],
+            'floating-village-boat-tour' => ['lat' => 13.2100, 'lng' => 104.0200],
+            'tonle-sap-sunset-bird-watching' => ['lat' => 13.1800, 'lng' => 103.9900],
+            'golden-hour-temple-photography' => ['lat' => 13.4300, 'lng' => 103.8700],
+            'portrait-session-ancient-ruins' => ['lat' => 13.4400, 'lng' => 103.8600],
+            '3-day-angkor-deep-dive' => ['lat' => 13.3671, 'lng' => 103.8448],
+            '2-day-temples-villages-combo' => ['lat' => 13.3671, 'lng' => 103.8448],
+        ];
+
         foreach ($details as $slug => $data) {
             $activity = Activity::where('slug', $slug)->first();
             if (! $activity) {
@@ -307,6 +324,11 @@ class ActivityDetailsSeeder extends Seeder
                 if ($activity->{$key} === null || $activity->{$key} === '' || $key === 'free_cancellation_hours' || $key === 'is_refundable') {
                     $activity->{$key} = $value;
                 }
+            }
+
+            if ($coords = $coordinates[$slug] ?? null) {
+                $activity->meeting_point_lat = $coords['lat'];
+                $activity->meeting_point_lng = $coords['lng'];
             }
 
             $activity->save();

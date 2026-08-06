@@ -23,19 +23,33 @@ class ActivityController extends Controller
             'language' => ['nullable', 'string', 'size:2'],
             'featured' => ['nullable', 'boolean'],
             'instant_book' => ['nullable', 'boolean'],
+            'date' => ['nullable', 'date', 'date_format:Y-m-d'],
             'query' => ['nullable', 'string', 'max:255'],
             'sort' => ['nullable', Rule::in(['price_asc', 'price_desc', 'rating', 'newest', 'duration'])],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'provider' => ['nullable', 'string', 'max:150'],
+            'service_type' => ['nullable', 'string', 'max:100'],
+            'transport_mode' => ['nullable', 'string', 'max:100'],
         ]);
 
         $query = Activity::query()
             ->live()
-            ->with(['provider', 'category', 'city', 'heroImage'])
+            ->with(['provider', 'category', 'city', 'heroImage', 'serviceTypes', 'transportModes'])
             ->withAvg('reviews as avg_rating', 'rating')
             ->withCount('reviews as reviews_count')
             ->when(
                 $validated['query'] ?? null,
                 fn (Builder $q, string $term) => $q->whereFullText(['title', 'description'], $term)
+            )
+            ->when(
+                $validated['provider'] ?? null,
+                function (Builder $q, string $provider) {
+                    if (is_numeric($provider)) {
+                        $q->where('provider_id', (int) $provider);
+                    } else {
+                        $q->whereHas('provider', fn ($pq) => $pq->where('slug', $provider));
+                    }
+                }
             );
 
         $this->applyFilters($query, $validated);
@@ -83,6 +97,7 @@ class ActivityController extends Controller
                     'lat' => $activity->meeting_point_lat,
                     'lng' => $activity->meeting_point_lng,
                 ],
+                'map' => $this->mapData($activity),
                 'duration_minutes' => $activity->duration_minutes,
                 'min_group' => $activity->min_group,
                 'max_group' => $activity->max_group,
@@ -103,7 +118,26 @@ class ActivityController extends Controller
                 'reviews_count' => (int) $activity->reviews_count,
                 'category' => $activity->category?->only(['id', 'name', 'slug', 'icon']),
                 'city' => $activity->city?->only(['id', 'name', 'slug']),
-                'provider' => $activity->provider?->only(['id', 'business_name', 'bio', 'avg_rating', 'total_bookings']),
+                'provider' => $activity->provider?->only([
+                    'id',
+                    'slug',
+                    'business_name',
+                    'tagline',
+                    'bio',
+                    'avg_rating',
+                    'total_bookings',
+                    'logo_url',
+                    'cover_image_url',
+                    'founded_year',
+                    'team_size',
+                    'spoken_languages',
+                    'certifications',
+                    'specialties',
+                    'service_area',
+                    'website_url',
+                    'phone',
+                    'whatsapp',
+                ]),
                 'hero_image' => $activity->heroImage?->url,
                 'gallery' => $activity->images->pluck('url')->values(),
                 'reviews' => $activity->reviews->map(fn ($review) => [
@@ -116,6 +150,31 @@ class ActivityController extends Controller
                 'published_at' => $activity->published_at?->toISOString(),
             ],
         ]);
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function mapData(Activity $activity): ?array
+    {
+        $lat = $activity->meeting_point_lat;
+        $lng = $activity->meeting_point_lng;
+
+        if ($lat === null || $lng === null) {
+            return null;
+        }
+
+        $lat = (float) $lat;
+        $lng = (float) $lng;
+
+        return [
+            'lat' => $lat,
+            'lng' => $lng,
+            'address' => $activity->meeting_point_address,
+            'google_maps_url' => "https://www.google.com/maps?q={$lat},{$lng}&z=15",
+            'google_maps_embed_url' => "https://maps.google.com/maps?q={$lat},{$lng}&z=15&output=embed",
+            'openstreetmap_url' => "https://www.openstreetmap.org/?mlat={$lat}&mlon={$lng}#map=16/{$lat}/{$lng}",
+        ];
     }
 
     /**
@@ -158,6 +217,21 @@ class ActivityController extends Controller
             ->when(
                 ($filters['instant_book'] ?? null) === true,
                 fn (Builder $q) => $q->where('is_instant_book', true)
+            )
+            ->when(
+                ($filters['date'] ?? null),
+                fn (Builder $q, string $date) => $q->whereHas(
+                    'timeSlots',
+                    fn ($tq) => $tq->where('date', $date)->where('remaining', '>', 0)
+                )
+            )
+            ->when(
+                $filters['service_type'] ?? null,
+                fn (Builder $q, string $slug) => $q->whereHas('serviceTypes', fn ($sq) => $sq->where('slug', $slug))
+            )
+            ->when(
+                $filters['transport_mode'] ?? null,
+                fn (Builder $q, string $slug) => $q->whereHas('transportModes', fn ($tq) => $tq->where('slug', $slug))
             );
     }
 
@@ -194,6 +268,10 @@ class ActivityController extends Controller
             'city' => $activity->city?->only(['id', 'name', 'slug']),
             'provider' => $activity->provider?->only(['id', 'business_name', 'avg_rating']),
             'hero_image' => $activity->heroImage?->url,
+            'meeting_point_lat' => $activity->meeting_point_lat,
+            'meeting_point_lng' => $activity->meeting_point_lng,
+            'service_types' => $activity->serviceTypes->map(fn ($st) => $st->only(['id', 'name', 'slug', 'icon', 'badge_color']))->values(),
+            'transport_modes' => $activity->transportModes->map(fn ($tm) => $tm->only(['id', 'name', 'slug', 'icon', 'badge_color', 'category']))->values(),
         ];
     }
 }

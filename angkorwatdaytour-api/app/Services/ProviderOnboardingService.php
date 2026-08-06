@@ -33,6 +33,7 @@ class ProviderOnboardingService
 
         return Provider::create([
             'user_id' => $user->id,
+            'slug' => 'provider-' . $user->id . '-' . uniqid(),
             'business_name' => '',
             'verification_status' => 'pending',
             'onboarding_status' => self::STATUS_STARTED,
@@ -51,6 +52,7 @@ class ProviderOnboardingService
 
         $provider->update([
             'business_name' => $data['business_name'],
+            'slug' => \Illuminate\Support\Str::slug($data['business_name']),
             'bio' => $data['bio'] ?? null,
             'service_area' => $data['service_area'] ?? null,
             'onboarding_status' => $provider->onboarding_status ?? self::STATUS_STARTED,

@@ -25,35 +25,35 @@ function ProviderActivityCard({ activity }: { activity: ProviderActivity }) {
   return (
     <Pressable
       onPress={() => router.push(`/activity/${activity.slug}`)}
-      className="bg-white rounded-2xl shadow-sm overflow-hidden mb-4 active:opacity-90"
+      className="bg-white rounded-2xl shadow-card border border-gyg-border overflow-hidden mb-4 active:opacity-90"
     >
       <ImageWithFallback
         uri={activity.hero_image ?? undefined}
-        containerClassName="h-40 w-full"
+        containerClassName="h-40 w-full bg-gyg-light"
         className="h-40 w-full"
       />
       <View className="p-4">
-        <Text className="font-heading text-lg text-stone-charcoal mb-1" numberOfLines={2}>
+        <Text className="font-heading text-lg text-gyg-text mb-1.5" numberOfLines={2}>
           {activity.title}
         </Text>
         <View className="flex-row items-center flex-wrap gap-y-1 mb-2">
           <View className="flex-row items-center mr-4">
-            <FontAwesome name="star" size={14} color="#D4AF37" />
-            <Text className="font-body text-stone-charcoal text-sm ml-1">
+            <FontAwesome name="star" size={13} color="#D4AF37" />
+            <Text className="font-body text-gyg-text text-sm ml-1">
               {activity.avg_rating} ({activity.reviews_count})
             </Text>
           </View>
           <View className="flex-row items-center">
-            <FontAwesome name="clock-o" size={14} color="#6B635C" />
-            <Text className="font-body text-stone-gray text-sm ml-1">{durationHours}h</Text>
+            <FontAwesome name="clock-o" size={13} color="#6B7280" />
+            <Text className="font-body text-gyg-muted text-sm ml-1">{durationHours}h</Text>
           </View>
         </View>
         <View className="flex-row items-center justify-between">
-          <Text className="font-heading text-angkor-orange">
+          <Text className="font-heading text-gyg-navy">
             {formatPrice(activity.base_price_usd, currency)}
           </Text>
           <View className="flex-row items-center">
-            <Text className="font-body text-stone-gray text-sm mr-1">View</Text>
+            <Text className="font-body text-gyg-muted text-sm mr-1">View</Text>
             <FontAwesome name="chevron-right" size={12} color="#9CA3AF" />
           </View>
         </View>
@@ -74,18 +74,18 @@ export default function ProviderProfileScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-bg justify-center items-center">
-        <ActivityIndicator color="#C8530A" />
+      <SafeAreaView className="flex-1 bg-gyg-bg justify-center items-center">
+        <ActivityIndicator color="#000C3B" />
       </SafeAreaView>
     );
   }
 
   if (error || !provider) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-bg px-6">
+      <SafeAreaView className="flex-1 bg-gyg-bg px-6">
         <View className="py-4">
-          <Pressable onPress={() => router.back()} className="self-start">
-            <FontAwesome name="arrow-left" size={22} color="#2B2622" />
+          <Pressable onPress={() => router.back()} className="self-start w-10 h-10 items-center justify-center rounded-full active:bg-gyg-light">
+            <FontAwesome name="arrow-left" size={20} color="#000C3B" />
           </Pressable>
         </View>
         <EmptyState
@@ -103,36 +103,36 @@ export default function ProviderProfileScreen() {
   const hasActivities = provider.activities.length > 0;
 
   return (
-    <SafeAreaView className="flex-1 bg-sand-bg">
+    <SafeAreaView className="flex-1 bg-gyg-bg">
       <ScrollView className="flex-1">
-        <View className="relative bg-angkor-orange/10 pb-6">
-          <View className="bg-black/5 absolute inset-0" />
+        <View className="relative bg-gyg-navy pb-8">
+          <View className="absolute top-0 left-0 right-0 h-24 bg-black/10" />
           <View className="relative px-6 pt-4 pb-6">
             <Pressable
               onPress={() => router.back()}
-              className="w-11 h-11 bg-white/90 rounded-full items-center justify-center mb-4 active:bg-white"
+              className="w-10 h-10 bg-white/15 rounded-full items-center justify-center mb-6 active:bg-white/25"
             >
-              <FontAwesome name="arrow-left" size={18} color="#2B2622" />
+              <FontAwesome name="arrow-left" size={18} color="#FFFFFF" />
             </Pressable>
 
-            <View className="w-24 h-24 rounded-full bg-angkor-orange items-center justify-center self-center mb-4 shadow-sm">
+            <View className="w-24 h-24 rounded-full bg-white/20 items-center justify-center self-center mb-4 border-4 border-white/10">
               <Text className="font-heading text-3xl text-white">{initial}</Text>
             </View>
 
-            <Text className="font-heading text-2xl text-stone-charcoal text-center mb-1">
+            <Text className="font-heading text-2xl text-white text-center mb-2">
               {provider.business_name}
             </Text>
 
-            <View className="flex-row items-center justify-center flex-wrap gap-x-4 gap-y-1 mb-3">
+            <View className="flex-row items-center justify-center flex-wrap gap-x-5 gap-y-1 mb-3">
               <View className="flex-row items-center">
                 <FontAwesome name="star" size={16} color="#D4AF37" />
-                <Text className="font-body text-stone-charcoal ml-1">
+                <Text className="font-body text-white ml-1.5">
                   {provider.avg_rating} rating
                 </Text>
               </View>
               <View className="flex-row items-center">
-                <FontAwesome name="suitcase" size={14} color="#6B635C" />
-                <Text className="font-body text-stone-gray ml-1">
+                <FontAwesome name="suitcase" size={14} color="rgba(255,255,255,0.7)" />
+                <Text className="font-body text-white/80 ml-1.5">
                   {provider.total_bookings} bookings
                 </Text>
               </View>
@@ -140,8 +140,8 @@ export default function ProviderProfileScreen() {
 
             {provider.service_area && (
               <View className="flex-row items-center justify-center">
-                <FontAwesome name="map-marker" size={14} color="#C8530A" />
-                <Text className="font-body text-stone-charcoal ml-1">
+                <FontAwesome name="map-marker" size={14} color="#D4AF37" />
+                <Text className="font-body text-white/90 ml-1.5">
                   {provider.service_area}
                 </Text>
               </View>
@@ -149,27 +149,27 @@ export default function ProviderProfileScreen() {
           </View>
         </View>
 
-        <View className="px-5 -mt-4 pb-8">
+        <View className="px-5 -mt-5 pb-8">
           {provider.bio ? (
-            <View className="bg-white rounded-2xl p-5 shadow-sm mb-5">
-              <Text className="font-heading text-lg text-stone-charcoal mb-2">About</Text>
-              <Text className="font-body text-stone-gray leading-5">{provider.bio}</Text>
+            <View className="bg-white rounded-2xl p-5 shadow-card border border-gyg-border mb-4">
+              <Text className="font-heading text-lg text-gyg-text mb-2">About</Text>
+              <Text className="font-body text-gyg-muted leading-5">{provider.bio}</Text>
             </View>
           ) : null}
 
-          <View className="bg-white rounded-2xl p-4 shadow-sm mb-5 flex-row items-center justify-between">
+          <View className="bg-white rounded-2xl p-4 shadow-card border border-gyg-border mb-5 flex-row items-center justify-between">
             <View>
-              <Text className="font-body text-stone-gray text-sm">Experiences listed</Text>
-              <Text className="font-heading text-2xl text-stone-charcoal">
+              <Text className="font-body text-gyg-muted text-sm">Experiences listed</Text>
+              <Text className="font-heading text-2xl text-gyg-text">
                 {provider.activities_count}
               </Text>
             </View>
-            <FontAwesome name="list" size={22} color="#C8530A" />
+            <FontAwesome name="list" size={22} color="#000C3B" />
           </View>
 
           <View className="flex-row items-center justify-between mb-3 mt-1">
-            <Text className="font-heading text-xl text-stone-charcoal">Experiences</Text>
-            <Text className="font-body text-stone-gray text-sm">
+            <Text className="font-heading text-xl text-gyg-text">Experiences</Text>
+            <Text className="font-body text-gyg-muted text-sm">
               {provider.activities.length} result{provider.activities.length === 1 ? '' : 's'}
             </Text>
           </View>

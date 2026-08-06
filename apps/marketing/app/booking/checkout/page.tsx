@@ -267,7 +267,7 @@ function CheckoutForm() {
 
             {/* Right: sticky order summary */}
             <aside className="hidden lg:block">
-              <div className="lg:sticky lg:top-24">
+              <div className="lg:sticky lg:top-24 z-20">
                 <CheckoutSummary
                   title={title}
                   image={heroImage}

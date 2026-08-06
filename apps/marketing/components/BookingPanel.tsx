@@ -98,7 +98,7 @@ export default function BookingPanel({
             <button
               type="button"
               onClick={() => onExpand?.(false)}
-              className="inline-flex items-center gap-1 text-xs font-medium text-gyg-muted hover:text-angkor-orange"
+              className="inline-flex items-center gap-1 text-xs font-medium text-gyg-muted hover:text-gyg-text"
             >
               Hide <ChevronUp className="w-3.5 h-3.5" />
             </button>
@@ -130,7 +130,7 @@ export default function BookingPanel({
           {canCheckout ? (
             <Link
               href={`/booking/checkout?${checkoutParams.toString()}`}
-              className="mt-5 block w-full text-center rounded-xl bg-angkor-orange hover:bg-angkor-orange-dark text-white px-6 py-4 font-bold text-lg transition"
+              className="mt-5 block w-full text-center rounded-xl bg-gyg-navy hover:bg-black text-white px-6 py-4 font-bold text-lg transition"
             >
               Book now
             </Link>
@@ -149,8 +149,8 @@ export default function BookingPanel({
           </p>
 
           {isInstantBook && (
-            <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-success-green bg-green-50 rounded-lg px-3 py-2">
-              <Zap className="w-4 h-4" /> Instant confirmation
+            <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-gyg-text bg-gyg-bg rounded-lg px-3 py-2">
+              <Zap className="w-4 h-4 text-gyg-navy" /> Instant confirmation
             </div>
           )}
         </div>
@@ -158,7 +158,7 @@ export default function BookingPanel({
         <button
           type="button"
           onClick={() => onExpand?.(true)}
-          className="w-full text-center rounded-xl bg-angkor-orange hover:bg-angkor-orange-dark text-white px-6 py-4 font-bold text-lg transition"
+          className="w-full text-center rounded-xl bg-gyg-navy hover:bg-black text-white px-6 py-4 font-bold text-lg transition"
         >
           Check availability
         </button>

@@ -17,13 +17,13 @@ export default function SectionHeading({
   return (
     <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
       <div>
-        <h2 className="text-2xl font-bold text-gyg-navy">{title}</h2>
-        {subtitle && <p className="text-gyg-muted mt-1">{subtitle}</p>}
+        <h2 className="text-2xl md:text-3xl font-bold text-gyg-navy tracking-tight">{title}</h2>
+        {subtitle && <p className="text-gyg-muted mt-1.5 text-sm md:text-base">{subtitle}</p>}
       </div>
       {href && linkText && (
         <Link
           href={href}
-          className="text-sm font-semibold text-angkor-orange hover:text-angkor-orange-dark flex items-center gap-1 shrink-0"
+          className="text-sm font-semibold text-gyg-navy hover:text-gyg-blue transition flex items-center gap-1 shrink-0"
         >
           {linkText} <ChevronRight className="w-4 h-4" />
         </Link>

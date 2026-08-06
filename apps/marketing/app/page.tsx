@@ -1,30 +1,15 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import Image from "next/image";
-import { fetchActivities, fetchCategories, fetchCities } from "@/lib/api";
+import { fetchActivities, fetchCategories, fetchCities, fetchServiceTypes, fetchTransportModes } from "@/lib/api";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import SearchHero from "@/components/SearchHero";
-import TourCard from "@/components/TourCard";
-import {
-  ShieldCheck,
-  Clock,
-  Wallet,
-  Headphones,
-  Search,
-  CalendarCheck,
-  Smartphone,
-  Ticket,
-  ChevronRight,
-  MapPin,
-  Star,
-  Landmark,
-  Utensils,
-  Bike,
-  Palmtree,
-  Camera,
-  Compass,
-  Sunrise,
-} from "lucide-react";
+import SearchBar from "@/components/SearchBar";
+import TourCarousel from "@/components/TourCarousel";
+import ImageCarousel from "@/components/ImageCarousel";
+import SectionHeading from "@/components/SectionHeading";
+import { FadeIn, StaggerContainer, StaggerItem, HoverLift } from "@/components/MotionWrapper";
+import { ChevronRight, MapPin, ShieldCheck, Star } from "lucide-react";
 
 interface Activity {
   id: number;
@@ -56,325 +41,300 @@ interface City {
   slug: string;
 }
 
-const CITY_IMAGES: Record<string, string> = {
-  "siem-reap": "/images/hero-angkor.jpg",
-  "phnom-penh": "/images/phnom-penh.jpg",
-  kampot: "/images/kampot.jpg",
-  battambang: "/images/battambang.jpg",
-};
-
 const ATTRACTIONS = [
   {
     slug: "angkor-wat",
     name: "Angkor Wat",
     image: "/images/hero-angkor.jpg",
-    countLabel: "30+ tours",
+    tours: "30+",
   },
   {
     slug: "bayon",
     name: "Bayon Temple",
     image: "/images/bayon.jpg",
-    countLabel: "18+ tours",
+    tours: "18+",
   },
   {
     slug: "ta-prohm",
     name: "Ta Prohm",
     image: "/images/taprohm.jpg",
-    countLabel: "15+ tours",
+    tours: "15+",
   },
   {
     slug: "tonle-sap",
     name: "Tonlé Sap",
     image: "/images/tonlesap.jpg",
-    countLabel: "12+ tours",
+    tours: "12+",
   },
 ];
 
-const CATEGORY_ICONS: Record<string, React.ElementType> = {
-  "temples-history": Landmark,
-  "food-culture": Utensils,
-  "adventure-outdoor": Bike,
-  "nature-wildlife": Palmtree,
-  "sunrise-sunset": Sunrise,
-  photography: Camera,
-  "local-experiences": Compass,
-};
+const HERO_TRUST = [
+  { icon: Star, text: "4.9 average rating" },
+  { icon: ShieldCheck, text: "Free cancellation" },
+  { icon: MapPin, text: "Verified local guides" },
+];
 
 export default async function Home() {
-  const activities = (await fetchActivities({ per_page: "8", featured: "1" })) as Activity[];
+  const topActivities = (await fetchActivities({ per_page: "8", featured: "1" })) as Activity[];
+  const sunriseTours = (await fetchActivities({ per_page: "8", query: "sunrise" })) as Activity[];
+  const tukTukTours = (await fetchActivities({ per_page: "8", query: "tuk tuk" })) as Activity[];
   const categories = (await fetchCategories()) as Category[];
   const cities = (await fetchCities()) as City[];
+  const serviceTypes = (await fetchServiceTypes()) as { id: number; name: string; slug: string; icon: string | null; badge_color: string | null }[];
+  const transportModes = (await fetchTransportModes()) as { id: number; name: string; slug: string; icon: string | null; badge_color: string | null; category: string }[];
 
   return (
-    <div className="flex flex-col flex-1">
+    <div className="flex flex-col flex-1 min-h-screen bg-white">
       <Header />
 
-      <SearchHero />
+      {/* Hero */}
+      <section className="relative min-h-[520px] md:min-h-[600px] flex items-center justify-center">
+        <Image
+          src="/images/hero-angkor.jpg"
+          alt="Angkor Wat sunrise"
+          fill
+          priority
+          className="object-cover"
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
 
-      <main className="flex-1">
-        {/* Categories */}
-        <section className="py-8 bg-white border-b border-gyg-border">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2">
-              {categories.slice(0, 10).map((category) => {
-                const Icon = CATEGORY_ICONS[category.slug] ?? Compass;
-                return (
-                  <Link
-                    key={category.id}
-                    href={`/category/${category.slug}`}
-                    className="shrink-0 flex items-center gap-2 px-5 py-3 rounded-full bg-sand-bg text-gyg-text font-medium hover:bg-angkor-orange hover:text-white transition"
-                  >
-                    <Icon className="w-4 h-4" />
-                    {category.name}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </section>
+        <div className="relative z-10 w-full max-w-4xl mx-auto px-4 sm:px-6 py-16 text-center text-white">
+          <FadeIn>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-4 leading-tight">
+              Find things to do in Cambodia
+            </h1>
+            <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+              Skip the lines, book with verified local guides, and explore Angkor your way.
+            </p>
+          </FadeIn>
 
-        {/* Destinations */}
-        <section className="py-14 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="flex items-end justify-between mb-6">
-              <div>
-                <h2 className="text-2xl md:text-3xl font-bold text-gyg-navy mb-1">
-                  Things to do wherever you&#39;re going
-                </h2>
-                <p className="text-gyg-muted">Explore top destinations across Cambodia</p>
-              </div>
-              <Link
-                href="/tours"
-                className="hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-angkor-orange hover:underline"
-              >
-                View all destinations <ChevronRight className="w-4 h-4" />
-              </Link>
+          <FadeIn delay={0.1}>
+            <div className="bg-white/10 backdrop-blur-md rounded-[32px] p-2 shadow-2xl border border-white/20">
+              <Suspense fallback={<div className="h-16 bg-white/20 rounded-[28px] animate-pulse" />}>
+                <div className="bg-white rounded-[28px] p-1.5 shadow-xl">
+                  <SearchBar />
+                </div>
+              </Suspense>
             </div>
+          </FadeIn>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {cities.slice(0, 4).map((city) => {
-                const image = CITY_IMAGES[city.slug] ?? CITY_IMAGES["siem-reap"];
-                return (
-                  <Link
-                    key={city.id}
-                    href={`/tours?city=${city.slug}`}
-                    className="group relative h-56 md:h-72 rounded-2xl overflow-hidden bg-gray-100"
-                  >
-                    <Image
-                      src={image}
-                      alt={city.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition duration-500"
-                      sizes="(max-width: 768px) 50vw, 25vw"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                    <div className="absolute bottom-4 left-4 text-white">
-                      <div className="flex items-center gap-1 text-xs text-white/80 mb-1">
-                        <MapPin className="w-3 h-3" /> Cambodia
-                      </div>
-                      <div className="font-bold text-lg md:text-xl">{city.name}</div>
-                      <div className="text-sm text-white/80 group-hover:text-white transition flex items-center gap-1">
-                        Explore tours <ChevronRight className="w-3 h-3" />
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
+          <FadeIn delay={0.2}>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-4 md:gap-6 text-sm font-medium text-white/90">
+              {HERO_TRUST.map(({ icon: Icon, text }) => (
+                <div key={text} className="flex items-center gap-1.5">
+                  <Icon className="w-4 h-4 text-angkor-orange-light" />
+                  {text}
+                </div>
+              ))}
             </div>
-          </div>
-        </section>
+          </FadeIn>
+        </div>
+      </section>
+
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-12 w-full space-y-16">
+        {/* Top activities */}
+        <FadeIn>
+          <section>
+            <SectionHeading
+              title="Top activities"
+              subtitle="Hand-picked tours loved by travelers"
+              href="/tours"
+              linkText="See all"
+            />
+            {topActivities.length === 0 ? (
+              <p className="text-gyg-muted">No tours available right now.</p>
+            ) : (
+              <TourCarousel activities={topActivities} featured autoplay />
+            )}
+          </section>
+        </FadeIn>
+
+        {/* Sunrise tours */}
+        <FadeIn>
+          <section>
+            <SectionHeading
+              title="Sunrise tours"
+              subtitle="Catch Angkor Wat at golden hour"
+              href="/tours?q=sunrise"
+              linkText="See all"
+            />
+            {sunriseTours.length === 0 ? (
+              <p className="text-gyg-muted">No sunrise tours found.</p>
+            ) : (
+              <TourCarousel activities={sunriseTours} />
+            )}
+          </section>
+        </FadeIn>
+
+        {/* Private tuk-tuk tours */}
+        <FadeIn>
+          <section>
+            <SectionHeading
+              title="Private tuk-tuk tours"
+              subtitle="Zip around the temples with a local driver"
+              href="/tours?q=tuk+tuk"
+              linkText="See all"
+            />
+            {tukTukTours.length === 0 ? (
+              <p className="text-gyg-muted">No tuk-tuk tours found.</p>
+            ) : (
+              <TourCarousel activities={tukTukTours} />
+            )}
+          </section>
+        </FadeIn>
 
         {/* Attractions */}
-        <section className="py-14 bg-sand-bg">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="flex items-end justify-between mb-6">
-              <div>
-                <h2 className="text-2xl md:text-3xl font-bold text-gyg-navy mb-1">
-                  Attractions you can&#39;t miss
-                </h2>
-                <p className="text-gyg-muted">The must-see sights and experiences in Cambodia</p>
-              </div>
-              <Link
-                href="/tours"
-                className="hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-angkor-orange hover:underline"
-              >
-                See all <ChevronRight className="w-4 h-4" />
-              </Link>
-            </div>
+        <FadeIn>
+          <section>
+            <SectionHeading
+              title="Attractions you can't miss"
+              subtitle="The must-see sights and experiences in Cambodia"
+              href="/tours"
+              linkText="See all attractions"
+            />
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <StaggerContainer className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
               {ATTRACTIONS.map((attraction) => (
+                <StaggerItem key={attraction.slug}>
+                  <HoverLift>
+                    <Link
+                      href={`/tours?q=${encodeURIComponent(attraction.name)}`}
+                      className="group relative h-52 md:h-64 rounded-2xl overflow-hidden bg-gray-100 block shadow-card"
+                    >
+                      <Image
+                        src={attraction.image}
+                        alt={attraction.name}
+                        fill
+                        className="object-cover group-hover:scale-105 transition duration-500"
+                        sizes="(max-width: 768px) 50vw, 25vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                      <div className="absolute bottom-4 left-4 text-white">
+                        <div className="font-bold text-base md:text-lg">{attraction.name}</div>
+                        <div className="text-xs text-white/80">{attraction.tours} tours</div>
+                      </div>
+                    </Link>
+                  </HoverLift>
+                </StaggerItem>
+              ))}
+            </StaggerContainer>
+          </section>
+        </FadeIn>
+
+        {/* Transport Modes — How to get there */}
+        <FadeIn>
+          <section>
+            <SectionHeading
+              title="How to get there"
+              subtitle="Choose your ride — from tuk-tuk to airplane, UFO and more"
+              href="/tours"
+              linkText="All transport options"
+            />
+
+            <ImageCarousel
+              items={transportModes.map((mode) => ({
+                id: mode.id,
+                name: mode.name,
+                slug: mode.slug,
+                image: mode.image,
+                badge_color: mode.badge_color,
+                subtitle: `${mode.category} transport`,
+              }))}
+              linkPrefix="/tours"
+              queryParam="transport_mode"
+            />
+          </section>
+        </FadeIn>
+
+        {/* Service Types — What you can book */}
+        <FadeIn>
+          <section>
+            <SectionHeading
+              title="What you can book"
+              subtitle="Photography, private tours, vehicle charter, rentals and more"
+              href="/tours"
+              linkText="All services"
+            />
+
+            <ImageCarousel
+              items={serviceTypes.map((st) => ({
+                id: st.id,
+                name: st.name,
+                slug: st.slug,
+                image: st.image,
+                badge_color: st.badge_color,
+                subtitle: st.description ?? 'Explore options',
+              }))}
+              linkPrefix="/tours"
+              queryParam="service_type"
+            />
+          </section>
+        </FadeIn>
+
+        {/* Destinations */}
+        <FadeIn>
+          <section>
+            <SectionHeading
+              title="Things to do wherever you're going"
+              subtitle="Explore top destinations across Cambodia"
+              href="/tours"
+              linkText="View all destinations"
+            />
+
+            <StaggerContainer className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+              {cities.slice(0, 4).map((city) => (
+                <StaggerItem key={city.id}>
+                  <HoverLift>
+                    <Link
+                      href={`/tours?city=${city.slug}`}
+                      className="group relative h-52 md:h-64 rounded-2xl overflow-hidden bg-gray-100 block shadow-card"
+                    >
+                      <Image
+                        src="/images/hero-angkor.jpg"
+                        alt={city.name}
+                        fill
+                        className="object-cover group-hover:scale-105 transition duration-500"
+                        sizes="(max-width: 768px) 50vw, 25vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                      <div className="absolute bottom-4 left-4 text-white">
+                        <div className="font-bold text-base md:text-lg">{city.name}</div>
+                        <div className="text-xs text-white/80 flex items-center gap-1">
+                          Explore tours <ChevronRight className="w-3 h-3" />
+                        </div>
+                      </div>
+                    </Link>
+                  </HoverLift>
+                </StaggerItem>
+              ))}
+            </StaggerContainer>
+          </section>
+        </FadeIn>
+
+        {/* Categories */}
+        <FadeIn>
+          <section>
+            <SectionHeading
+              title="Explore by category"
+              subtitle="Find the perfect experience for your trip"
+              href="/tours"
+              linkText="All categories"
+            />
+
+            <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2 mt-6">
+              {categories.slice(0, 12).map((category) => (
                 <Link
-                  key={attraction.slug}
-                  href={`/tours?q=${encodeURIComponent(attraction.name)}`}
-                  className="group relative h-48 md:h-60 rounded-2xl overflow-hidden bg-gray-100"
+                  key={category.id}
+                  href={`/category/${category.slug}`}
+                  className="shrink-0 px-5 py-3 rounded-full bg-white border border-gyg-border text-gyg-text font-medium hover:border-gyg-navy hover:text-gyg-navy hover:shadow-soft transition"
                 >
-                  <Image
-                    src={attraction.image}
-                    alt={attraction.name}
-                    fill
-                    className="object-cover group-hover:scale-105 transition duration-500"
-                    sizes="(max-width: 768px) 50vw, 25vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                  <div className="absolute bottom-4 left-4 right-4 text-white">
-                    <div className="font-bold text-base md:text-lg">{attraction.name}</div>
-                    <div className="text-xs text-white/80 flex items-center gap-1">
-                      <Star className="w-3 h-3 fill-khmer-gold text-khmer-gold" /> {attraction.countLabel}
-                    </div>
-                  </div>
+                  {category.name}
                 </Link>
               ))}
             </div>
-          </div>
-        </section>
-
-        {/* Featured tours */}
-        <section className="py-14 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="flex items-end justify-between mb-6">
-              <div>
-                <h2 className="text-2xl md:text-3xl font-bold text-gyg-navy mb-1">Top-rated experiences</h2>
-                <p className="text-gyg-muted">Hand-picked tours loved by travelers</p>
-              </div>
-              <Link
-                href="/tours"
-                className="hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-angkor-orange hover:underline"
-              >
-                See all tours <ChevronRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-            {activities.length === 0 ? (
-              <p className="text-gyg-muted">No tours available right now.</p>
-            ) : (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {activities.map((activity) => (
-                  <TourCard key={activity.id} {...activity} />
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* How it works */}
-        <section className="py-14 bg-sand-bg">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-10">
-              <h2 className="text-2xl md:text-3xl font-bold text-gyg-navy mb-2">Book in 4 simple steps</h2>
-              <p className="text-gyg-muted">Your Cambodian adventure starts here</p>
-            </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                {
-                  icon: Search,
-                  title: "1. Search",
-                  body: "Browse tours, transport, and guides by destination or activity.",
-                },
-                {
-                  icon: CalendarCheck,
-                  title: "2. Choose a date",
-                  body: "See real-time availability and pick the slot that fits your plans.",
-                },
-                {
-                  icon: Wallet,
-                  title: "3. Book instantly",
-                  body: "Secure your spot with flexible USD/KHR payment on the web or app.",
-                },
-                {
-                  icon: Ticket,
-                  title: "4. Get your ticket",
-                  body: "Receive a mobile e-ticket with QR code and meet your provider.",
-                },
-              ].map((item) => (
-                <div
-                  key={item.title}
-                  className="bg-white rounded-2xl p-6 border border-gyg-border"
-                >
-                  <div className="w-12 h-12 rounded-full bg-angkor-orange-light flex items-center justify-center mb-4">
-                    <item.icon className="w-6 h-6 text-angkor-orange" />
-                  </div>
-                  <h3 className="font-bold text-gyg-text mb-2">{item.title}</h3>
-                  <p className="text-sm text-gyg-muted">{item.body}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Why book with us */}
-        <section className="py-14 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-10">
-              <h2 className="text-2xl md:text-3xl font-bold text-gyg-navy mb-2">Why book with AngkorWatDayTour?</h2>
-              <p className="text-gyg-muted">The easier way to discover Cambodia</p>
-            </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                {
-                  icon: ShieldCheck,
-                  title: "Verified providers",
-                  body: "Every guide, driver, and photographer is reviewed.",
-                },
-                {
-                  icon: Clock,
-                  title: "Instant confirmation",
-                  body: "Check real-time availability and book in seconds.",
-                },
-                {
-                  icon: Wallet,
-                  title: "Flexible payment",
-                  body: "Pay with KHQR, Visa, or Mastercard in USD/KHR.",
-                },
-                {
-                  icon: Headphones,
-                  title: "24/7 support",
-                  body: "Local help when you need it during your trip.",
-                },
-              ].map((item) => (
-                <div
-                  key={item.title}
-                  className="bg-sand-bg rounded-2xl p-6 border border-gyg-border"
-                >
-                  <item.icon className="w-8 h-8 text-angkor-orange mb-4" />
-                  <h3 className="font-bold text-gyg-text mb-1">{item.title}</h3>
-                  <p className="text-sm text-gyg-muted">{item.body}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* App CTA */}
-        <section className="py-16 bg-angkor-orange text-white">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <Smartphone className="w-8 h-8" />
-              <h2 className="text-3xl font-bold">Book on the go</h2>
-            </div>
-            <p className="text-white/90 mb-8 max-w-xl mx-auto">
-              Download the AngkorWatDayTour app for mobile tickets, live chat support, and instant booking.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href="https://play.google.com/store/apps/details?id=com.angkorwatdaytour.app"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center rounded-xl bg-white text-angkor-orange px-6 py-3 font-semibold hover:bg-gray-100 transition"
-              >
-                Get it on Google Play
-              </a>
-              <a
-                href="https://apps.apple.com/app/angkorwatdaytour/id0000000000"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center rounded-xl border-2 border-white text-white px-6 py-3 font-semibold hover:bg-white/10 transition"
-              >
-                Download on App Store
-              </a>
-            </div>
-          </div>
-        </section>
+          </section>
+        </FadeIn>
       </main>
 
       <Footer />

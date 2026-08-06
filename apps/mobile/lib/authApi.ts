@@ -24,18 +24,42 @@ export interface AuthResponse {
   token: string;
 }
 
+interface RawAuthResponse {
+  user: Omit<User, 'role'> & { role?: string | { name?: string } | null };
+  token: string;
+}
+
+function normalizeUser(raw: RawAuthResponse['user']): User {
+  const role =
+    typeof raw.role === 'string'
+      ? raw.role
+      : raw.role?.name ?? 'customer';
+
+  return { ...raw, role } as User;
+}
+
+function normalizeAuthResponse(raw: unknown): AuthResponse {
+  const response = raw as RawAuthResponse;
+  return {
+    user: normalizeUser(response.user),
+    token: response.token,
+  };
+}
+
 export async function register(payload: RegisterPayload): Promise<AuthResponse> {
-  return (await apiFetch('/auth/register', {
+  const response = await apiFetch('/auth/register', {
     method: 'POST',
     body: JSON.stringify(payload),
-  })) as AuthResponse;
+  });
+  return normalizeAuthResponse(response);
 }
 
 export async function login(payload: LoginPayload): Promise<AuthResponse> {
-  return (await apiFetch('/auth/login', {
+  const response = await apiFetch('/auth/login', {
     method: 'POST',
     body: JSON.stringify(payload),
-  })) as AuthResponse;
+  });
+  return normalizeAuthResponse(response);
 }
 
 export async function logout(): Promise<void> {

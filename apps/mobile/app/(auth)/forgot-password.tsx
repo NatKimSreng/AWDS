@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 import { AuthInput } from '@/components/AuthInput';
 import { AuthButton } from '@/components/AuthButton';
@@ -56,12 +57,15 @@ export default function ForgotPasswordScreen() {
 
   if (isSent) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-bg justify-center px-6">
-        <View className="bg-white rounded-2xl p-6 shadow-sm">
-          <Text className="font-heading text-2xl text-stone-charcoal text-center mb-3">
+      <SafeAreaView className="flex-1 bg-gyg-bg justify-center px-6">
+        <View className="bg-white rounded-2xl p-6 shadow-card border border-gyg-border items-center">
+          <View className="w-16 h-16 rounded-full bg-gyg-navy items-center justify-center mb-4">
+            <FontAwesome name="envelope-o" size={28} color="#FFFFFF" />
+          </View>
+          <Text className="font-heading text-2xl text-gyg-text text-center mb-3">
             Check your email
           </Text>
-          <Text className="font-body text-stone-gray text-center mb-6">
+          <Text className="font-body text-gyg-muted text-center mb-6">
             If an account exists for {email}, we've sent a password reset link.
           </Text>
           <AuthButton title="Back to sign in" onPress={() => router.replace('/login')} />
@@ -71,7 +75,7 @@ export default function ForgotPasswordScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-sand-bg">
+    <SafeAreaView className="flex-1 bg-gyg-bg">
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
@@ -83,10 +87,10 @@ export default function ForgotPasswordScreen() {
             keyboardShouldPersistTaps="handled"
           >
             <View className="mb-8">
-              <Text className="font-heading text-3xl text-stone-charcoal text-center">
+              <Text className="font-heading text-3xl text-gyg-navy text-center">
                 Reset password
               </Text>
-              <Text className="font-body text-stone-gray text-center mt-2">
+              <Text className="font-body text-gyg-muted text-center mt-2">
                 Enter your email and we'll send you a reset link
               </Text>
             </View>

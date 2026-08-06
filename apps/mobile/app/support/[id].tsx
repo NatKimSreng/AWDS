@@ -137,34 +137,37 @@ export default function SupportChatScreen() {
 
   if (!isNewChat && isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-bg justify-center items-center">
-        <ActivityIndicator color="#C8530A" />
+      <SafeAreaView className="flex-1 bg-gyg-bg justify-center items-center">
+        <ActivityIndicator color="#000C3B" />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-sand-bg">
+    <SafeAreaView className="flex-1 bg-gyg-bg">
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
       >
-        <View className="px-5 py-4 flex-row items-center border-b border-stone-gray/20">
-          <Pressable onPress={() => router.back()} className="mr-3">
-            <FontAwesome name="arrow-left" size={22} color="#2B2622" />
+        <View className="px-5 py-4 flex-row items-center bg-white border-b border-gyg-border">
+          <Pressable
+            onPress={() => router.back()}
+            className="w-10 h-10 items-center justify-center -ml-2 rounded-full active:bg-gyg-bg mr-2"
+          >
+            <FontAwesome name="arrow-left" size={20} color="#000C3B" />
           </Pressable>
           <View className="flex-1">
-            <Text className="font-heading text-lg text-stone-charcoal" numberOfLines={1}>
+            <Text className="font-heading text-lg text-gyg-text" numberOfLines={1}>
               {conversation?.title ?? 'AI Support'}
             </Text>
-            <Text className="font-body text-stone-gray text-xs">Powered by AI · Escalate anytime</Text>
+            <Text className="font-body text-gyg-muted text-xs">Powered by AI · Escalate anytime</Text>
           </View>
           <Pressable
             onPress={handleEscalate}
             disabled={escalateMutation.isPending}
-            className="px-3 py-2 rounded-full bg-stone-gray/10 active:bg-stone-gray/20 disabled:opacity-50"
+            className="px-3 py-2 rounded-full bg-gyg-bg border border-gyg-border active:bg-gyg-light disabled:opacity-50"
           >
-            <Text className="font-body text-xs text-stone-charcoal font-semibold">Human</Text>
+            <Text className="font-body text-xs text-gyg-text font-semibold">Human</Text>
           </Pressable>
         </View>
 
@@ -174,8 +177,14 @@ export default function SupportChatScreen() {
           onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: false })}
         >
           {messages.length === 0 && (
-            <View className="bg-white rounded-2xl p-4 mb-4 self-start max-w-[85%]">
-              <Text className="font-body text-stone-charcoal leading-5">
+            <View className="bg-white rounded-2xl p-4 mb-4 self-start max-w-[85%] border border-gyg-border">
+              <View className="flex-row items-center mb-2">
+                <View className="w-7 h-7 rounded-full bg-gyg-navy items-center justify-center mr-2">
+                  <FontAwesome name="android" size={14} color="#FFFFFF" />
+                </View>
+                <Text className="font-heading text-sm text-gyg-text">Angkor Support</Text>
+              </View>
+              <Text className="font-body text-gyg-text leading-5">
                 Hi! I'm your AngkorWatDayTour support assistant. Ask me about tours, bookings, payments, or refunds.
               </Text>
             </View>
@@ -191,19 +200,21 @@ export default function SupportChatScreen() {
               >
                 <View
                   className={`rounded-2xl px-4 py-3 ${
-                    isUser ? 'bg-angkor-orange' : 'bg-white'
+                    isUser
+                      ? 'bg-gyg-navy rounded-br-md'
+                      : 'bg-white border border-gyg-border rounded-bl-md'
                   }`}
                 >
                   <Text
                     className={`font-body text-sm leading-5 ${
-                      isUser ? 'text-white' : 'text-stone-charcoal'
+                      isUser ? 'text-white' : 'text-gyg-text'
                     }`}
                   >
                     {message.body}
                   </Text>
                 </View>
                 {message.created_at && (
-                  <Text className="font-body text-stone-gray text-xs mt-1 px-1">
+                  <Text className="font-body text-gyg-muted text-xs mt-1 px-1">
                     {new Date(message.created_at).toLocaleTimeString([], {
                       hour: '2-digit',
                       minute: '2-digit',
@@ -215,19 +226,20 @@ export default function SupportChatScreen() {
           })}
 
           {isTyping && (
-            <View className="self-start bg-white rounded-2xl px-4 py-3 mb-3">
-              <ActivityIndicator color="#C8530A" size="small" />
+            <View className="self-start bg-white rounded-2xl px-4 py-3 mb-3 border border-gyg-border">
+              <ActivityIndicator color="#000C3B" size="small" />
             </View>
           )}
         </ScrollView>
 
-        <View className="bg-white border-t border-stone-gray/20 p-3 flex-row items-end">
+        <View className="bg-white border-t border-gyg-border p-3 flex-row items-end">
           <TextInput
             value={input}
             onChangeText={setInput}
             placeholder="Ask a question..."
+            placeholderTextColor="#9CA3AF"
             multiline
-            className="flex-1 bg-stone-gray/10 rounded-xl px-4 py-3 font-body text-stone-charcoal max-h-32"
+            className="flex-1 bg-gyg-bg rounded-xl px-4 py-3 font-body text-gyg-text max-h-32 border border-gyg-border"
           />
           <Pressable
             onPress={() => {
@@ -235,7 +247,11 @@ export default function SupportChatScreen() {
               if (body) sendMutation.mutate(body);
             }}
             disabled={!input.trim() || sendMutation.isPending}
-            className="ml-3 w-11 h-11 rounded-full bg-angkor-orange items-center justify-center active:bg-angkor-orange-dark disabled:bg-stone-gray/40"
+            className={`ml-3 w-11 h-11 rounded-full items-center justify-center ${
+              !input.trim() || sendMutation.isPending
+                ? 'bg-gyg-border'
+                : 'bg-gyg-navy active:bg-black'
+            }`}
           >
             {sendMutation.isPending ? (
               <ActivityIndicator color="#FFFFFF" size="small" />

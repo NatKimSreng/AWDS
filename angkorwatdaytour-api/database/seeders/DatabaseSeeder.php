@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             LanguageSeeder::class,
             CurrencySeeder::class,
             ActivityCategorySeeder::class,
+            ServiceAndTransportSeeder::class,
             CitySeeder::class,
             DemoDataSeeder::class,
         ]);

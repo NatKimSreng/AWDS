@@ -128,7 +128,7 @@ export default function TourGallery({ images, title }: TourGalleryProps) {
         <button
           type="button"
           onClick={() => openLightbox(0)}
-          className="text-sm font-semibold text-gyg-text underline hover:text-angkor-orange"
+          className="text-sm font-semibold text-gyg-text underline hover:text-gyg-navy"
         >
           Show all photos
         </button>

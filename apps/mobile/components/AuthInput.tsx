@@ -8,14 +8,14 @@ interface AuthInputProps extends TextInputProps {
 export function AuthInput({ label, error, secureTextEntry, ...props }: AuthInputProps) {
   return (
     <View className="mb-4">
-      <Text className="mb-1.5 text-sm font-body text-stone-charcoal">{label}</Text>
+      <Text className="mb-1.5 text-sm font-body text-gyg-text font-semibold">{label}</Text>
       <TextInput
-        className={`rounded-xl border px-4 py-3 font-body text-stone-charcoal ${
+        className={`rounded-xl border px-4 py-3.5 font-body text-gyg-text ${
           error
             ? 'border-error-red bg-error-red/5'
-            : 'border-stone-gray/30 bg-white'
+            : 'border-gyg-border bg-gyg-bg focus:border-gyg-navy'
         }`}
-        placeholderTextColor="#6B635C"
+        placeholderTextColor="#6B7280"
         secureTextEntry={secureTextEntry}
         {...props}
       />

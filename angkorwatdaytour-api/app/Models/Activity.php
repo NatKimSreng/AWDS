@@ -107,6 +107,16 @@ class Activity extends Model
         return $this->hasMany(Favorite::class);
     }
 
+    public function serviceTypes()
+    {
+        return $this->belongsToMany(ServiceType::class, 'activity_service_type');
+    }
+
+    public function transportModes()
+    {
+        return $this->belongsToMany(TransportMode::class, 'activity_transport_mode');
+    }
+
     public function scopeLive($query)
     {
         return $query->where('status', 'live')->whereNotNull('published_at');

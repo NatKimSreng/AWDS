@@ -1,14 +1,17 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   View,
   Text,
   Image,
+  Pressable,
   ActivityIndicator,
   type ImageSourcePropType,
   type ImageStyle,
   type StyleProp,
 } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+
+import { rewriteAssetUrl } from '@/lib/assetUrl';
 
 interface ImageWithFallbackProps {
   uri?: string | null;
@@ -19,6 +22,7 @@ interface ImageWithFallbackProps {
   resizeMode?: 'cover' | 'contain' | 'stretch' | 'center';
   style?: StyleProp<ImageStyle>;
   showLoading?: boolean;
+  onLongPress?: () => void;
 }
 
 export function ImageWithFallback({
@@ -29,11 +33,13 @@ export function ImageWithFallback({
   resizeMode = 'cover',
   style,
   showLoading = true,
+  onLongPress,
 }: ImageWithFallbackProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
-  const finalSource = uri && !hasError ? { uri } : source;
+  const rewrittenUri = useMemo(() => rewriteAssetUrl(uri), [uri]);
+  const finalSource = rewrittenUri && !hasError ? { uri: rewrittenUri } : source;
   const isEmpty =
     !finalSource ||
     (typeof finalSource === 'object' &&
@@ -43,14 +49,14 @@ export function ImageWithFallback({
   if (isEmpty) {
     return (
       <View
-        className={`items-center justify-center bg-stone-gray/15 ${containerClassName}`}
+        className={`items-center justify-center bg-gyg-light ${containerClassName}`}
       >
         <FontAwesome name="image" size={28} color="#9CA3AF" />
       </View>
     );
   }
 
-  return (
+  const imageContent = (
     <View className={`overflow-hidden ${containerClassName}`}>
       <Image
         source={finalSource}
@@ -65,12 +71,22 @@ export function ImageWithFallback({
         }}
       />
       {showLoading && isLoading && (
-        <View className="absolute inset-0 items-center justify-center bg-stone-gray/10">
-          <ActivityIndicator color="#C8530A" />
+        <View className="absolute inset-0 items-center justify-center bg-gyg-light/50">
+          <ActivityIndicator color="#000C3B" />
         </View>
       )}
     </View>
   );
+
+  if (onLongPress) {
+    return (
+      <Pressable onLongPress={onLongPress} className="active:opacity-90">
+        {imageContent}
+      </Pressable>
+    );
+  }
+
+  return imageContent;
 }
 
 interface AvatarProps {
@@ -88,7 +104,7 @@ export function Avatar({ uri, name = '?', size = 48, className = '' }: AvatarPro
     return (
       <Image
         source={{ uri }}
-        className={`rounded-full bg-stone-gray/15 ${className}`}
+        className={`rounded-full bg-gyg-light ${className}`}
         style={{ width: size, height: size, borderRadius: size / 2 }}
         onError={() => setHasError(true)}
       />
@@ -97,7 +113,7 @@ export function Avatar({ uri, name = '?', size = 48, className = '' }: AvatarPro
 
   return (
     <View
-      className={`rounded-full bg-angkor-orange items-center justify-center ${className}`}
+      className={`rounded-full bg-gyg-navy items-center justify-center ${className}`}
       style={{ width: size, height: size, borderRadius: size / 2 }}
     >
       <Text className="font-heading text-white" style={{ fontSize: size * 0.4 }}>

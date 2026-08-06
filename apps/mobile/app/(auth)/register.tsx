@@ -81,12 +81,12 @@ export default function RegisterScreen() {
 
   if (isRegistered) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-bg justify-center px-6">
-        <View className="bg-white rounded-2xl p-6 shadow-sm">
-          <Text className="font-heading text-2xl text-stone-charcoal text-center mb-3">
+      <SafeAreaView className="flex-1 bg-gyg-bg justify-center px-6">
+        <View className="bg-white rounded-2xl p-6 shadow-card">
+          <Text className="font-heading text-2xl text-gyg-navy text-center mb-3">
             Account created!
           </Text>
-          <Text className="font-body text-stone-gray text-center mb-6">
+          <Text className="font-body text-gyg-muted text-center mb-6">
             We've sent a verification email to {email}. Please verify your email before booking.
           </Text>
           <AuthButton title="Explore tours" onPress={() => router.replace('/(tabs)')} />
@@ -96,7 +96,7 @@ export default function RegisterScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-sand-bg">
+    <SafeAreaView className="flex-1 bg-gyg-bg">
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
@@ -108,11 +108,11 @@ export default function RegisterScreen() {
             keyboardShouldPersistTaps="handled"
           >
             <View className="mb-8">
-              <Text className="font-heading text-3xl text-stone-charcoal text-center">
+              <Text className="font-heading text-3xl text-gyg-navy text-center">
                 Create account
               </Text>
-              <Text className="font-body text-stone-gray text-center mt-2">
-                Join us to book unforgettable Angkor experiences
+              <Text className="font-body text-gyg-muted text-center mt-2">
+                Save tours, track bookings, and book faster next time
               </Text>
             </View>
 
@@ -175,7 +175,7 @@ export default function RegisterScreen() {
             />
 
             <View className="mt-8 flex-row justify-center items-center">
-              <Text className="font-body text-stone-gray">Already have an account? </Text>
+              <Text className="font-body text-gyg-muted">Already have an account? </Text>
               <AuthLink href="/login">Sign in</AuthLink>
             </View>
           </ScrollView>

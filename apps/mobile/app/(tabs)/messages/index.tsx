@@ -13,37 +13,44 @@ import { useQuery } from '@tanstack/react-query';
 
 import { fetchThreads, type MessageThread } from '@/lib/messageApi';
 import { EmptyState } from '@/components/EmptyState';
+import { ErrorState } from '@/components/ErrorState';
 
 function ThreadItem({ thread }: { thread: MessageThread }) {
   const otherName = thread.provider?.name ?? 'Provider';
   const lastAt = thread.last_message_at
-    ? new Date(thread.last_message_at).toLocaleDateString()
+    ? new Date(thread.last_message_at).toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+      })
     : null;
 
   return (
     <Pressable
       onPress={() => router.push(`/(tabs)/messages/${thread.id}` as never)}
-      className="bg-white rounded-2xl p-4 mb-3 shadow-sm active:bg-stone-gray/10"
+      className="bg-white rounded-2xl p-4 mb-3 shadow-card border border-gyg-border active:bg-gyg-bg"
     >
       <View className="flex-row justify-between items-start">
-        <View className="flex-1">
-          <Text className="font-heading text-base text-stone-charcoal mb-1">
+        <View className="flex-1 pr-3">
+          <Text className="font-heading text-base text-gyg-text mb-0.5" numberOfLines={1}>
             {thread.subject}
           </Text>
-          <Text className="font-body text-stone-gray text-sm">
+          <Text className="font-body text-gyg-muted text-sm">
             with {otherName}
           </Text>
         </View>
         {thread.unread_count > 0 && (
-          <View className="bg-angkor-orange rounded-full min-w-[24px] h-6 px-2 items-center justify-center">
+          <View className="bg-gyg-navy rounded-full min-w-[24px] h-6 px-2 items-center justify-center">
             <Text className="font-body text-xs text-white font-semibold">
-              {thread.unread_count}
+              {thread.unread_count > 99 ? '99+' : thread.unread_count}
             </Text>
           </View>
         )}
       </View>
       {lastAt && (
-        <Text className="font-body text-stone-gray text-xs mt-2">{lastAt}</Text>
+        <View className="flex-row items-center mt-2">
+          <FontAwesome name="clock-o" size={12} color="#9CA3AF" />
+          <Text className="font-body text-gyg-muted text-xs ml-1.5">{lastAt}</Text>
+        </View>
       )}
     </Pressable>
   );
@@ -57,43 +64,50 @@ export default function MessagesScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-bg justify-center items-center">
-        <ActivityIndicator color="#C8530A" />
+      <SafeAreaView className="flex-1 bg-gyg-bg justify-center items-center">
+        <ActivityIndicator color="#000C3B" />
       </SafeAreaView>
     );
   }
 
   if (error) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-bg justify-center items-center px-6">
-        <EmptyState
-          icon="exclamation-circle"
+      <SafeAreaView className="flex-1 bg-gyg-bg px-4">
+        <View className="pt-4 pb-2">
+          <Text className="font-heading text-2xl text-gyg-text">Messages</Text>
+        </View>
+        <ErrorState
           title="Could not load messages"
-          subtitle="Pull down to retry or check your connection."
+          error={error}
+          onRetry={() => refetch()}
         />
-        <Pressable onPress={() => refetch()} className="mt-4">
-          <Text className="font-body text-angkor-orange font-semibold">Try again</Text>
-        </Pressable>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-sand-bg">
+    <SafeAreaView className="flex-1 bg-gyg-bg">
+      <View className="px-4 pt-4 pb-2">
+        <Text className="font-heading text-2xl text-gyg-text">Messages</Text>
+        <Text className="font-body text-sm text-gyg-muted">Conversations with your providers</Text>
+      </View>
+
       <FlatList
         data={threads ?? []}
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => <ThreadItem thread={item} />}
         contentContainerClassName="p-4"
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor="#C8530A" />
+          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor="#000C3B" />
         }
         ListEmptyComponent={
-          <EmptyState
-            icon="comments-o"
-            title="No messages yet"
-            subtitle="Start a conversation from any confirmed booking."
-          />
+          <View className="py-12">
+            <EmptyState
+              icon="comments-o"
+              title="No messages yet"
+              subtitle="Start a conversation from any confirmed booking."
+            />
+          </View>
         }
       />
     </SafeAreaView>

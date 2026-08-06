@@ -9,7 +9,7 @@ interface AuthLinkProps {
 export function AuthLink({ href, children }: AuthLinkProps) {
   return (
     <Link href={href as any}>
-      <Text className="font-body text-sm text-angkor-orange font-semibold">
+      <Text className="font-body text-sm text-gyg-navy font-semibold">
         {children}
       </Text>
     </Link>

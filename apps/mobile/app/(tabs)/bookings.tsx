@@ -9,23 +9,33 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useQuery } from '@tanstack/react-query';
 
 import { fetchMyBookings, BookingListItem, MyBookingsResponse } from '@/lib/bookingApi';
 import { ImageWithFallback } from '@/components/ImageWithFallback';
+import { EmptyState } from '@/components/EmptyState';
+import { ErrorState } from '@/components/ErrorState';
 
-const statusStyles: Record<string, string> = {
-  pending: 'bg-amber-100 text-amber-800',
-  confirmed: 'bg-emerald-100 text-emerald-800',
-  completed: 'bg-stone-200 text-stone-700',
-  cancelled: 'bg-red-100 text-red-800',
-  refunded: 'bg-blue-100 text-blue-800',
+const statusStyles: Record<
+  string,
+  { bg: string; text: string; icon: React.ComponentProps<typeof FontAwesome>['name']; label: string }
+> = {
+  pending: { bg: 'bg-amber-100', text: 'text-amber-800', icon: 'clock-o', label: 'Pending' },
+  confirmed: { bg: 'bg-emerald-100', text: 'text-emerald-800', icon: 'check', label: 'Confirmed' },
+  completed: { bg: 'bg-gyg-light', text: 'text-gyg-muted', icon: 'flag-checkered', label: 'Completed' },
+  cancelled: { bg: 'bg-red-100', text: 'text-red-800', icon: 'times', label: 'Cancelled' },
+  refunded: { bg: 'bg-blue-100', text: 'text-blue-800', icon: 'refresh', label: 'Refunded' },
 };
 
 function BookingCard({ booking }: { booking: BookingListItem }) {
   const router = useRouter();
-  const badgeStyle = statusStyles[booking.status] ?? 'bg-stone-100 text-stone-600';
-  const [bgClass, textClass] = badgeStyle.split(' ');
+  const style = statusStyles[booking.status] ?? {
+    bg: 'bg-gyg-light',
+    text: 'text-gyg-muted',
+    icon: 'question-circle',
+    label: booking.status,
+  };
 
   const formattedDate = booking.booking_date
     ? new Date(booking.booking_date).toLocaleDateString(undefined, {
@@ -39,40 +49,54 @@ function BookingCard({ booking }: { booking: BookingListItem }) {
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={() => router.push(`/booking/${booking.id}` as never)}
-      className="bg-card-white rounded-xl p-4 mb-3 shadow-sm border border-stone-gray/10"
+      className="bg-white rounded-2xl p-4 mb-3 shadow-card border border-gyg-border active:bg-gyg-bg"
     >
       <View className="flex-row items-start gap-3">
         <ImageWithFallback
           uri={booking.activity?.hero_image?.image_url}
-          containerClassName="w-16 h-16 rounded-lg bg-sand-bg"
-          className="w-16 h-16 rounded-lg"
+          containerClassName="w-16 h-16 rounded-xl bg-gyg-light"
+          className="w-16 h-16 rounded-xl"
           resizeMode="cover"
         />
 
         <View className="flex-1">
           <View className="flex-row items-center justify-between mb-1">
-            <Text className="text-xs text-stone-gray uppercase tracking-wide">
+            <Text className="text-xs text-gyg-muted uppercase tracking-wide font-semibold">
               {booking.booking_ref}
             </Text>
-            <View className={`px-2 py-0.5 rounded-full ${bgClass}`}>
-              <Text className={`text-xs font-medium capitalize ${textClass}`}>
-                {booking.status}
-              </Text>
+            <View className={`px-2.5 py-1 rounded-full flex-row items-center ${style.bg}`}>
+              <FontAwesome name={style.icon} size={11} style={{ marginRight: 4 }} color={
+                style.text === 'text-amber-800' ? '#92400E' :
+                style.text === 'text-emerald-800' ? '#047857' :
+                style.text === 'text-red-800' ? '#991B1B' :
+                style.text === 'text-blue-800' ? '#1E40AF' : '#6B7280'
+              } />
+              <Text className={`text-xs font-semibold capitalize ${style.text}`}>{style.label}</Text>
             </View>
           </View>
 
-          <Text className="font-heading text-base text-stone-charcoal mb-1" numberOfLines={2}>
+          <Text className="font-heading text-base text-gyg-text mb-1" numberOfLines={2}>
             {booking.activity?.title ?? 'Unknown activity'}
           </Text>
 
-          <Text className="font-body text-sm text-stone-gray">
-            {formattedDate}
-            {booking.booking_time ? ` • ${booking.booking_time}` : ''}
-            {' • '}
-            {booking.traveler_count} traveler{booking.traveler_count === 1 ? '' : 's'}
-          </Text>
+          <View className="flex-row items-center flex-wrap">
+            <FontAwesome name="calendar" size={11} color="#6B7280" />
+            <Text className="font-body text-sm text-gyg-muted ml-1.5">
+              {formattedDate}
+            </Text>
+            {booking.booking_time && (
+              <>
+                <Text className="font-body text-gyg-muted text-sm mx-1">·</Text>
+                <Text className="font-body text-sm text-gyg-muted">{booking.booking_time}</Text>
+              </>
+            )}
+            <Text className="font-body text-gyg-muted text-sm mx-1">·</Text>
+            <Text className="font-body text-sm text-gyg-muted">
+              {booking.traveler_count} traveler{booking.traveler_count === 1 ? '' : 's'}
+            </Text>
+          </View>
 
-          <Text className="font-body text-sm text-stone-charcoal mt-1">
+          <Text className="font-body text-sm text-gyg-text font-semibold mt-2">
             ${booking.total_price} {booking.currency}
           </Text>
         </View>
@@ -98,27 +122,19 @@ export default function BookingsScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-bg justify-center items-center">
-        <ActivityIndicator size="large" color="#C8530A" />
+      <SafeAreaView className="flex-1 bg-gyg-bg justify-center items-center">
+        <ActivityIndicator size="large" color="#000C3B" />
       </SafeAreaView>
     );
   }
 
   if (error) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-bg justify-center items-center px-6">
-        <Text className="font-heading text-xl text-stone-charcoal mb-2">
-          Could not load bookings
-        </Text>
-        <Text className="font-body text-stone-gray text-center mb-4">
-          {error instanceof Error ? error.message : 'Something went wrong.'}
-        </Text>
-        <TouchableOpacity
-          onPress={() => refetch()}
-          className="bg-angkor-orange px-4 py-2 rounded-lg"
-        >
-          <Text className="text-white font-medium">Try again</Text>
-        </TouchableOpacity>
+      <SafeAreaView className="flex-1 bg-gyg-bg px-4">
+        <View className="pt-4 pb-2">
+          <Text className="font-heading text-2xl text-gyg-text">My Bookings</Text>
+        </View>
+        <ErrorState title="Could not load bookings" error={error} onRetry={refetch} />
       </SafeAreaView>
     );
   }
@@ -126,12 +142,10 @@ export default function BookingsScreen() {
   const bookings = data?.data ?? [];
 
   return (
-    <SafeAreaView className="flex-1 bg-sand-bg">
+    <SafeAreaView className="flex-1 bg-gyg-bg">
       <View className="px-4 pt-4 pb-2">
-        <Text className="font-heading text-2xl text-stone-charcoal">My Bookings</Text>
-        <Text className="font-body text-stone-gray">
-          Tap a booking to view details or cancel.
-        </Text>
+        <Text className="font-heading text-2xl text-gyg-text">My Bookings</Text>
+        <Text className="font-body text-sm text-gyg-muted">Tap a booking to view details or cancel.</Text>
       </View>
 
       <FlatList
@@ -140,23 +154,17 @@ export default function BookingsScreen() {
         renderItem={({ item }) => <BookingCard booking={item} />}
         contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#C8530A" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#000C3B" />
         }
         ListEmptyComponent={
-          <View className="py-12 items-center">
-            <Text className="text-4xl mb-3">🎒</Text>
-            <Text className="font-heading text-lg text-stone-charcoal mb-1">
-              No bookings yet
-            </Text>
-            <Text className="font-body text-stone-gray text-center px-8">
-              Explore tours and book your next Angkor adventure.
-            </Text>
-            <TouchableOpacity
-              onPress={() => router.push('/')}
-              className="mt-4 bg-angkor-orange px-4 py-2 rounded-lg"
-            >
-              <Text className="text-white font-medium">Explore tours</Text>
-            </TouchableOpacity>
+          <View className="py-12">
+            <EmptyState
+              icon="ticket"
+              title="No bookings yet"
+              subtitle="Explore tours and book your next Cambodia adventure."
+              actionLabel="Explore tours"
+              onAction={() => router.push('/')}
+            />
           </View>
         }
       />

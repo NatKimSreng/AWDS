@@ -59,7 +59,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-sand-bg">
+    <SafeAreaView className="flex-1 bg-gyg-bg">
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
@@ -71,11 +71,11 @@ export default function LoginScreen() {
             keyboardShouldPersistTaps="handled"
           >
             <View className="mb-8">
-              <Text className="font-heading text-3xl text-stone-charcoal text-center">
+              <Text className="font-heading text-3xl text-gyg-navy text-center">
                 Welcome back
               </Text>
-              <Text className="font-body text-stone-gray text-center mt-2">
-                Sign in to explore Angkor tours
+              <Text className="font-body text-gyg-muted text-center mt-2">
+                Sign in to save tours and manage your bookings
               </Text>
             </View>
 
@@ -115,7 +115,7 @@ export default function LoginScreen() {
             </View>
 
             <View className="mt-8 flex-row justify-center items-center">
-              <Text className="font-body text-stone-gray">Don't have an account? </Text>
+              <Text className="font-body text-gyg-muted">Don't have an account? </Text>
               <AuthLink href="/register">Sign up</AuthLink>
             </View>
           </ScrollView>

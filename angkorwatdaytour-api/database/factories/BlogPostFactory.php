@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\User;
+use App\Helpers\SeederImageHelper;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -27,7 +28,7 @@ class BlogPostFactory extends Factory
             'excerpt' => fake()->paragraph(2),
             'body_html' => '<p>' . implode('</p><p>', fake()->paragraphs(5)) . '</p>',
             'body_markdown' => fake()->paragraphs(5, true),
-            'cover_image_url' => fake()->imageUrl(1200, 600, 'travel'),
+            'cover_image_url' => SeederImageHelper::travelImageUrl(1200, 600),
             'seo_meta_title' => $title,
             'seo_meta_description' => fake()->sentence(12),
             'status' => fake()->randomElement(['published', 'published', 'draft']),

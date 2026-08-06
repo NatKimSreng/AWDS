@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\ProviderOnboardingController;
 use App\Http\Controllers\Api\Public\ActivityController as PublicActivityController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\TicketController;
+use App\Http\Controllers\Api\UserProfileController;
 use App\Http\Controllers\Api\Public\AvailabilityController as PublicAvailabilityController;
 use App\Http\Controllers\Api\Public\BookingController as PublicBookingController;
 use App\Http\Controllers\Api\Public\CategoryController as PublicCategoryController;
@@ -31,7 +32,8 @@ use App\Http\Controllers\Api\Public\ExchangeRateController;
 use App\Http\Controllers\Api\Public\PaymentController as PublicPaymentController;
 use App\Http\Controllers\Api\Public\ProviderController as PublicProviderController;
 use App\Http\Controllers\Api\Public\SearchController;
-use App\Http\Controllers\Api\Public\SettingsController;
+use App\Http\Controllers\Api\Public\ServiceTypeController as PublicServiceTypeController;
+use App\Http\Controllers\Api\Public\TransportModeController as PublicTransportModeController;
 use App\Http\Controllers\Api\Vendor\BookingController as VendorBookingController;
 use App\Http\Controllers\Api\Vendor\DashboardController as VendorDashboardController;
 use App\Http\Controllers\Api\Vendor\EarningController as VendorEarningController;
@@ -76,6 +78,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/user', function (\Illuminate\Http\Request $request) {
         return $request->user();
     })->name('user.show');
+
+    Route::get('/profile', [UserProfileController::class, 'show'])->name('profile.show');
+    Route::put('/profile', [UserProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/avatar', [UserProfileController::class, 'uploadAvatar'])->name('profile.avatar.upload');
 
     Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
 
@@ -218,6 +224,10 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::post('/payouts/{payout}/mark-paid', [AdminPayoutController::class, 'markPaid'])->whereNumber('payout')->name('admin.payouts.mark-paid');
 
     Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users.index');
+    Route::post('/users', [AdminUserController::class, 'store'])->name('admin.users.store');
+    Route::get('/users/{user}', [AdminUserController::class, 'show'])->whereNumber('user')->name('admin.users.show');
+    Route::patch('/users/{user}/role', [AdminUserController::class, 'updateRole'])->whereNumber('user')->name('admin.users.role');
+    Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->whereNumber('user')->name('admin.users.destroy');
 });
 
 /*
@@ -238,11 +248,17 @@ Route::prefix('public')->group(function () {
     Route::get('/categories', [PublicCategoryController::class, 'index'])->name('public.categories.index');
     Route::get('/categories/{slug}', [PublicCategoryController::class, 'show'])->name('public.categories.show');
 
+    Route::get('/service-types', [PublicServiceTypeController::class, 'index'])->name('public.service-types.index');
+    Route::get('/service-types/{slug}', [PublicServiceTypeController::class, 'show'])->name('public.service-types.show');
+
+    Route::get('/transport-modes', [PublicTransportModeController::class, 'index'])->name('public.transport-modes.index');
+    Route::get('/transport-modes/{slug}', [PublicTransportModeController::class, 'show'])->name('public.transport-modes.show');
+
     Route::get('/cities', [PublicCityController::class, 'index'])->name('public.cities.index');
     Route::get('/cities/{slug}', [PublicCityController::class, 'show'])->name('public.cities.show');
 
+    Route::get('/providers', [PublicProviderController::class, 'index'])->name('public.providers.index');
     Route::get('/providers/{provider}', [PublicProviderController::class, 'show'])
-        ->whereNumber('provider')
         ->name('public.providers.show');
 
     Route::get('/search', [SearchController::class, 'index'])->name('public.search');

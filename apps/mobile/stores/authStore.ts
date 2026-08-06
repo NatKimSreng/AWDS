@@ -9,6 +9,24 @@ export interface User {
   email: string;
   role: string;
   avatar_url?: string | null;
+  phone?: string | null;
+  language_pref?: string | null;
+  date_of_birth?: string | null;
+  country?: string | null;
+  nationality?: string | null;
+  address?: string | null;
+  bio?: string | null;
+  emergency_contact_name?: string | null;
+  emergency_contact_phone?: string | null;
+  email_verified_at?: string | null;
+  created_at?: string | null;
+  stats?: {
+    total_bookings: number;
+    upcoming_bookings: number;
+    completed_bookings: number;
+    favorites_count: number;
+    unread_messages_count: number;
+  } | null;
 }
 
 interface AuthState {
@@ -16,6 +34,7 @@ interface AuthState {
   token: string | null;
   isLoading: boolean;
   setAuth: (user: User, token: string) => Promise<void>;
+  setUser: (user: User) => void;
   clearAuth: () => Promise<void>;
   restoreToken: () => Promise<void>;
   isAuthenticated: () => boolean;
@@ -31,6 +50,10 @@ export const useAuthStore = create<AuthState>()(
       setAuth: async (user, token) => {
         await setToken(token);
         set({ user, token });
+      },
+
+      setUser: (user) => {
+        set({ user });
       },
 
       clearAuth: async () => {

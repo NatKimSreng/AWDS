@@ -115,6 +115,22 @@ export interface AdminListing {
   created_at: string;
 }
 
+export interface AdminListingDetail extends AdminListing {
+  description: string | null;
+  itinerary: any | null;
+  inclusions: string[] | null;
+  exclusions: string[] | null;
+  meeting_point: {
+    address: string | null;
+    lat: number | null;
+    lng: number | null;
+  };
+  min_group: number;
+  spoken_languages: string[] | null;
+  published_at: string | null;
+  gallery: Array<{ id: number; url: string; is_hero: boolean }>;
+}
+
 export interface AdminBooking {
   id: number;
   booking_ref: string;
@@ -130,6 +146,21 @@ export interface AdminBooking {
   activity: { id: number; title: string; slug: string } | null;
   provider: { id: number; business_name: string } | null;
   customer: { id?: number; name: string | null; email?: string | null } | null;
+}
+
+export interface AdminBookingDetail extends AdminBooking {
+  special_requests: string | null;
+  confirmed_at: string | null;
+  cancelled_at: string | null;
+  time_slot: { id: number; date: string; start_time: string } | null;
+  customer: { id?: number; name: string | null; email?: string | null; phone?: string | null } | null;
+  addons: Array<{ id: number; name: string; price: number | string }>;
+  status_history: Array<{
+    status: string;
+    changed_by_type: string;
+    note: string | null;
+    created_at: string;
+  }>;
 }
 
 export interface AdminPayout {
@@ -157,8 +188,33 @@ export interface AdminUser {
   created_at: string;
 }
 
+export interface AdminUserDetail extends AdminUser {
+  phone: string | null;
+  avatar_url: string | null;
+  language_pref: string | null;
+  date_of_birth: string | null;
+  country: string | null;
+  nationality: string | null;
+  address: string | null;
+  bio: string | null;
+  recent_bookings: Array<{
+    id: number;
+    booking_ref: string;
+    status: string;
+    total_price: number | string;
+    currency: string;
+    activity: { id: number; title: string; slug: string } | null;
+    created_at: string;
+  }>;
+}
+
 export async function getDashboardStats(): Promise<AdminDashboardStats> {
   const response = await api.get('/api/admin/dashboard');
+  return response.data.data;
+}
+
+export async function getProvider(id: number): Promise<AdminProviderDetail> {
+  const response = await api.get(`/api/admin/providers/${id}`);
   return response.data.data;
 }
 
@@ -179,6 +235,16 @@ export async function rejectProvider(id: number, reason?: string): Promise<Admin
   return response.data.data;
 }
 
+export async function toggleFeaturedProvider(id: number): Promise<AdminProvider> {
+  const response = await api.post(`/api/admin/providers/${id}/toggle-featured`);
+  return response.data.data;
+}
+
+export async function getListing(id: number): Promise<AdminListingDetail> {
+  const response = await api.get(`/api/admin/listings/${id}`);
+  return response.data.data;
+}
+
 export async function getListings(status?: string, providerId?: number, query?: string, page = 1): Promise<PaginatedResponse<AdminListing>> {
   const response = await api.get('/api/admin/listings', {
     params: { status, provider_id: providerId, query, page, per_page: 20 },
@@ -191,8 +257,18 @@ export async function updateListingStatus(id: number, status: string): Promise<A
   return response.data.data;
 }
 
+export async function toggleFeaturedListing(id: number): Promise<AdminListing> {
+  const response = await api.post(`/api/admin/listings/${id}/toggle-featured`);
+  return response.data.data;
+}
+
 export async function deleteListing(id: number): Promise<void> {
   await api.delete(`/api/admin/listings/${id}`);
+}
+
+export async function getBooking(id: number): Promise<AdminBookingDetail> {
+  const response = await api.get(`/api/admin/bookings/${id}`);
+  return response.data.data;
 }
 
 export async function getBookings(status?: string, query?: string, page = 1): Promise<PaginatedResponse<AdminBooking>> {
@@ -229,9 +305,37 @@ export async function markPayoutPaid(id: number, transactionRef?: string): Promi
   return response.data.data;
 }
 
+export async function getUser(id: number): Promise<AdminUserDetail> {
+  const response = await api.get(`/api/admin/users/${id}`);
+  return response.data.data;
+}
+
 export async function getUsers(role?: string, query?: string, page = 1): Promise<PaginatedResponse<AdminUser>> {
   const response = await api.get('/api/admin/users', {
     params: { role, query, page, per_page: 20 },
   });
   return response.data;
+}
+
+export async function updateUserRole(id: number, role: string): Promise<AdminUser> {
+  const response = await api.patch(`/api/admin/users/${id}/role`, { role });
+  return response.data.data;
+}
+
+export async function deleteUser(id: number): Promise<void> {
+  await api.delete(`/api/admin/users/${id}`);
+}
+
+export interface CreateUserData {
+  name: string;
+  email: string;
+  phone?: string;
+  role: string;
+  password: string;
+  password_confirmation: string;
+}
+
+export async function createUser(data: CreateUserData): Promise<AdminUser> {
+  const response = await api.post('/api/admin/users', data);
+  return response.data.data;
 }

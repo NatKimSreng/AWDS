@@ -12,9 +12,21 @@ class Provider extends Model
 
     protected $fillable = [
         'user_id',
+        'slug',
         'business_name',
+        'tagline',
         'bio',
         'service_area',
+        'founded_year',
+        'team_size',
+        'spoken_languages',
+        'certifications',
+        'specialties',
+        'website_url',
+        'phone',
+        'whatsapp',
+        'logo_url',
+        'cover_image_url',
         'verification_status',
         'onboarding_status',
         'id_document_url',
@@ -33,7 +45,17 @@ class Provider extends Model
             'commission_rate' => 'decimal:2',
             'is_featured' => 'boolean',
             'approved_at' => 'datetime',
+            'spoken_languages' => 'array',
+            'certifications' => 'array',
+            'specialties' => 'array',
+            'founded_year' => 'integer',
+            'team_size' => 'integer',
         ];
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
     }
 
     public function scopeApproved($query)

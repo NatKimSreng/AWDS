@@ -49,10 +49,20 @@ export async function apiFetch(
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const response = await fetchWithTimeout(`${API_URL}/api${path}`, {
-    ...options,
-    headers,
-  });
+  const url = `${API_URL}/api${path}`;
+
+  let response: Response;
+  try {
+    response = await fetchWithTimeout(url, {
+      ...options,
+      headers,
+    });
+  } catch (err) {
+    const message = err instanceof Error && err.name === 'AbortError'
+      ? `Request timed out after ${API_TIMEOUT / 1000}s`
+      : `Cannot connect to API at ${API_URL}. Make sure the backend is running and reachable.`;
+    throw new ApiError(message, 0);
+  }
 
   const contentType = response.headers.get('content-type') ?? '';
   const data = contentType.includes('application/json')
@@ -84,10 +94,20 @@ export async function apiFetchMultipart(
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const response = await fetchWithTimeout(`${API_URL}/api${path}`, {
-    ...options,
-    headers,
-  });
+  const url = `${API_URL}/api${path}`;
+
+  let response: Response;
+  try {
+    response = await fetchWithTimeout(url, {
+      ...options,
+      headers,
+    });
+  } catch (err) {
+    const message = err instanceof Error && err.name === 'AbortError'
+      ? `Request timed out after ${API_TIMEOUT / 1000}s`
+      : `Cannot connect to API at ${API_URL}. Make sure the backend is running and reachable.`;
+    throw new ApiError(message, 0);
+  }
 
   const contentType = response.headers.get('content-type') ?? '';
   const data = contentType.includes('application/json')
@@ -103,6 +123,19 @@ export async function apiFetchMultipart(
   }
 
   return data;
+}
+
+export async function testApiConnection(): Promise<{ ok: boolean; message: string; url: string }> {
+  try {
+    await fetchWithTimeout(`${API_URL}/api/public/categories`, { method: 'GET' });
+    return { ok: true, message: 'Connected successfully', url: API_URL };
+  } catch (err) {
+    return {
+      ok: false,
+      message: err instanceof Error ? err.message : 'Connection failed',
+      url: API_URL,
+    };
+  }
 }
 
 export { ApiError };

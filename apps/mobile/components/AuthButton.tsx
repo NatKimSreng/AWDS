@@ -26,17 +26,17 @@ export function AuthButton({
       disabled={disabled || loading}
       className={`rounded-xl py-3.5 items-center justify-center ${
         isPrimary
-          ? 'bg-angkor-orange active:bg-angkor-orange-dark'
-          : 'border border-angkor-orange bg-transparent active:bg-angkor-orange-light/30'
+          ? 'bg-gyg-navy active:bg-black'
+          : 'border border-gyg-navy bg-transparent active:bg-gyg-light'
       } ${(disabled || loading) ? 'opacity-60' : ''}`}
       {...props}
     >
       {loading ? (
-        <ActivityIndicator color={isPrimary ? '#fff' : '#C8530A'} />
+        <ActivityIndicator color={isPrimary ? '#fff' : '#000C3B'} />
       ) : (
         <Text
           className={`font-body text-base font-semibold ${
-            isPrimary ? 'text-white' : 'text-angkor-orange'
+            isPrimary ? 'text-white' : 'text-gyg-navy'
           }`}
         >
           {title}

@@ -13,9 +13,11 @@ use App\Models\Review;
 use App\Models\ReviewImage;
 use App\Models\TimeSlot;
 use App\Models\User;
+use App\Helpers\SeederImageHelper;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class Vendor1DemoSeeder extends Seeder
 {
@@ -36,6 +38,7 @@ class Vendor1DemoSeeder extends Seeder
 
         $provider = Provider::firstOrNew(['user_id' => $user->id]);
         $provider->fill([
+            'slug' => Str::slug('Siem Reap Sunrise Tours') . '-vendor1',
             'business_name' => 'Siem Reap Sunrise Tours',
             'bio' => 'Local guides specializing in sunrise Angkor Wat experiences and temple photography.',
             'service_area' => 'Angkor Archaeological Park',
@@ -244,21 +247,6 @@ class Vendor1DemoSeeder extends Seeder
 
     private function travelImageUrl(int $width, int $height): string
     {
-        $ids = [
-            '1770848125591-2e97455bf21d', // Angkor Wat sunrise
-            '1762091486050-5be11ee3c8d7', // Phnom Penh Royal Palace
-            '1661487906939-aea1f059b84f', // Kampot river
-            '1700155024603-771638efc72f', // Battambang town
-            '1762270753499-e6f87335d754', // Bayon faces
-            '1770848126209-465ea630f630', // Ta Prohm roots
-            '1757756170752-472097c4e565', // Tonlé Sap village
-            '1636474333831-6d2aa38cc501', // Cambodia countryside cycling
-            '1653959864991-c828b72c82a8', // Cambodian sunset
-            '1593009579715-ccb8bed049b5', // Cambodia night market
-        ];
-
-        $id = $ids[array_rand($ids)];
-
-        return "https://images.unsplash.com/photo-{$id}?auto=format&fit=crop&w={$width}&h={$height}&q=80";
+        return SeederImageHelper::travelImageUrl($width, $height);
     }
 }

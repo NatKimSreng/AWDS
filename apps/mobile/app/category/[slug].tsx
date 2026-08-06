@@ -5,99 +5,134 @@ import {
   FlatList,
   Pressable,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 
 import { fetchCategories, fetchActivities, type ActivityCard } from '@/lib/publicApi';
-import { formatPrice } from '@/lib/formatCurrency';
-import { useSettingsStore } from '@/stores/settingsStore';
-import { ImageWithFallback } from '@/components/ImageWithFallback';
+import { TourCard } from '@/components/TourCard';
 import { EmptyState } from '@/components/EmptyState';
+import { ErrorState } from '@/components/ErrorState';
 
-function ActivityCardItem({
-  activity,
-  currency,
-}: {
-  activity: ActivityCard;
-  currency: 'USD' | 'KHR';
-}) {
-  return (
-    <Pressable
-      onPress={() => router.push(`/activity/${activity.slug}`)}
-      className="bg-white rounded-2xl overflow-hidden shadow-sm mb-4 active:opacity-90"
-    >
-      <ImageWithFallback
-        uri={activity.hero_image}
-        containerClassName="h-40 w-full"
-        className="h-40 w-full"
-      />
-      <View className="p-4">
-        <Text className="font-heading text-lg text-stone-charcoal mb-1" numberOfLines={2}>
-          {activity.title}
-        </Text>
-        <View className="flex-row items-center justify-between mt-2">
-          <View className="flex-row items-center">
-            <FontAwesome name="clock-o" size={14} color="#6B635C" />
-            <Text className="font-body text-sm text-stone-gray ml-1">
-              {Math.round(activity.duration_minutes / 60)}h
-            </Text>
-          </View>
-          <Text className="font-body text-angkor-orange font-semibold">
-            {formatPrice(activity.base_price_usd, currency)}
-          </Text>
-        </View>
-      </View>
-    </Pressable>
-  );
-}
+const SORTS = [
+  { key: 'recommended', label: 'Recommended' },
+  { key: 'price_asc', label: 'Price: Low to High' },
+  { key: 'price_desc', label: 'Price: High to Low' },
+  { key: 'rating', label: 'Top Rated' },
+];
 
 export default function CategoryScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
-  const currency = useSettingsStore((state) => state.currency);
+  const [refreshing, setRefreshing] = useState(false);
+  const [sort, setSort] = useState('recommended');
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn: () => fetchCategories(),
   });
 
-  const { data: activitiesPage, isLoading } = useQuery({
-    queryKey: ['activities', 'category', slug],
-    queryFn: () => fetchActivities({ category: slug, per_page: 20 }),
+  const {
+    data: activitiesPage,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['activities', 'category', slug, sort],
+    queryFn: () => fetchActivities({
+      category: slug,
+      per_page: 20,
+      sort: sort === 'recommended' ? undefined : sort as any,
+    }),
     enabled: !!slug,
   });
 
   const category = categories?.find((c) => c.slug === slug);
+  const count = activitiesPage?.data?.length ?? 0;
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
 
   return (
-    <SafeAreaView className="flex-1 bg-sand-bg">
-      <View className="px-4 py-3 flex-row items-center">
-        <Pressable onPress={() => router.back()} className="mr-3">
-          <FontAwesome name="arrow-left" size={22} color="#2B2622" />
-        </Pressable>
-        <Text className="font-heading text-xl text-stone-charcoal">
-          {category?.name ?? 'Category'}
-        </Text>
+    <SafeAreaView className="flex-1 bg-gyg-bg">
+      <View className="px-4 py-3 bg-white border-b border-gyg-border">
+        <View className="flex-row items-center">
+          <Pressable
+            onPress={() => router.back()}
+            className="w-10 h-10 rounded-full bg-gyg-bg items-center justify-center mr-3 active:bg-gyg-light"
+          >
+            <FontAwesome name="arrow-left" size={18} color="#000C3B" />
+          </Pressable>
+          <View className="flex-1">
+            <Text className="font-heading text-xl text-gyg-text" numberOfLines={1}>{category?.name ?? 'Category'}</Text>
+            <Text className="font-body text-xs text-gyg-muted">
+              {count} experience{count === 1 ? '' : 's'}
+            </Text>
+          </View>
+        </View>
+
+        {/* Sort chips */}
+        <FlatList
+          data={SORTS}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item.key}
+          renderItem={({ item }) => (
+            <Pressable
+              onPress={() => setSort(item.key)}
+              className={`rounded-full px-3.5 py-1.5 mr-2 mt-3 border ${
+                sort === item.key
+                  ? 'bg-gyg-navy border-gyg-navy'
+                  : 'bg-white border-gyg-border active:bg-gyg-bg'
+              }`}
+            >
+              <Text
+                className={`font-body text-xs font-semibold ${
+                  sort === item.key ? 'text-white' : 'text-gyg-text'
+                }`}
+              >
+                {item.label}
+              </Text>
+            </Pressable>
+          )}
+        />
       </View>
 
       {isLoading ? (
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator color="#C8530A" />
+          <ActivityIndicator color="#000C3B" />
         </View>
+      ) : error ? (
+        <ErrorState title="Could not load category" error={error} onRetry={refetch} />
       ) : (
         <FlatList
           data={activitiesPage?.data ?? []}
-          renderItem={({ item }) => <ActivityCardItem activity={item} currency={currency} />}
+          renderItem={({ item }: { item: ActivityCard }) => (
+            <View className="px-4 mb-4">
+              <TourCard activity={item} variant="horizontal" />
+            </View>
+          )}
           keyExtractor={(item) => `activity-${item.id}`}
-          contentContainerStyle={{ padding: 16, paddingTop: 0 }}
+          contentContainerStyle={{ paddingTop: 12, paddingBottom: 28 }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#000C3B" />
+          }
           ListEmptyComponent={
-            <EmptyState
-              icon="folder-open-o"
-              title="No tours found"
-              subtitle="Try another category or explore all tours."
-            />
+            <View className="py-12">
+              <EmptyState
+                icon="folder-open-o"
+                title="No tours found"
+                subtitle="Try another category or explore all tours."
+                actionLabel="Explore all"
+                onAction={() => router.push('/search')}
+              />
+            </View>
           }
         />
       )}

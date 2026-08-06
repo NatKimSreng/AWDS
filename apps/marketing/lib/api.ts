@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:8000';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:8000';
 
 export async function apiFetch(path: string, options: RequestInit = {}): Promise<unknown> {
   try {
@@ -27,14 +27,28 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
   }
 }
 
-export async function fetchActivities(params: Record<string, string> = {}) {
+import type { Activity } from "./types";
+
+// ...existing code...
+
+export async function fetchActivities(params: Record<string, string> = {}): Promise<Activity[]> {
   const query = new URLSearchParams(params).toString();
-  const data = (await apiFetch(`/public/activities?${query}`)) as { data: unknown[] };
+  const data = (await apiFetch(`/public/activities?${query}`)) as { data: Activity[] };
   return data.data;
 }
 
 export async function fetchCategories() {
   const data = (await apiFetch('/public/categories')) as { data: unknown[] };
+  return data.data;
+}
+
+export async function fetchServiceTypes() {
+  const data = (await apiFetch('/public/service-types')) as { data: unknown[] };
+  return data.data;
+}
+
+export async function fetchTransportModes() {
+  const data = (await apiFetch('/public/transport-modes')) as { data: unknown[] };
   return data.data;
 }
 
@@ -63,6 +77,64 @@ export async function fetchAvailability(slug: string, dateFrom?: string, dateTo?
 export async function fetchActivityReviews(slug: string) {
   const data = (await apiFetch(`/public/activities/${slug}/reviews`)) as { data: unknown[] };
   return data.data;
+}
+
+// Providers
+
+export interface ProviderSummary {
+  id: number;
+  slug: string;
+  business_name: string;
+  tagline: string | null;
+  bio: string | null;
+  service_area: string | null;
+  avg_rating: number;
+  total_bookings: number;
+  activities_count: number;
+  founded_year: number | null;
+  team_size: number | null;
+  logo_url: string | null;
+  cover_image_url: string | null;
+  spoken_languages: string[];
+  specialties: string[];
+}
+
+export interface ProviderActivity {
+  id: number;
+  title: string;
+  slug: string;
+  duration_minutes: number;
+  min_group: number;
+  max_group: number;
+  base_price_usd: string;
+  avg_rating: number;
+  reviews_count: number;
+  is_featured: boolean;
+  is_instant_book: boolean;
+  category: { id: number; name: string; slug: string; icon: string | null } | null;
+  city: { id: number; name: string; slug: string } | null;
+  provider: { id: number; business_name: string; avg_rating?: number } | null;
+  hero_image: string | null;
+}
+
+export interface ProviderDetail extends ProviderSummary {
+  certifications: string[];
+  website_url: string | null;
+  phone: string | null;
+  whatsapp: string | null;
+  activities: ProviderActivity[];
+}
+
+export async function fetchProviders(): Promise<ProviderSummary[]> {
+  const data = (await apiFetch('/public/providers')) as { data: unknown[] };
+  return Array.isArray(data.data) ? (data.data as ProviderSummary[]) : [];
+}
+
+export async function fetchProvider(id: number | string): Promise<ProviderDetail | null> {
+  const data = (await apiFetch(`/public/providers/${id}`)) as { data: unknown };
+  return data.data && typeof data.data === 'object' && !Array.isArray(data.data)
+    ? (data.data as ProviderDetail)
+    : null;
 }
 
 // Guest booking API

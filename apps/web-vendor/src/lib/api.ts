@@ -346,3 +346,40 @@ export async function updatePayoutAccount(data: {
   const response = await api.put('/api/vendor/settings/payout', data);
   return response.data.data;
 }
+
+export interface UserProfile {
+  id: number;
+  name: string;
+  email: string;
+  phone: string | null;
+  avatar_url: string | null;
+  language_pref: string | null;
+  role: { id: number; name: string; label?: string };
+  date_of_birth: string | null;
+  country: string | null;
+  nationality: string | null;
+  address: string | null;
+  bio: string | null;
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
+  created_at: string;
+}
+
+export async function getUserProfile(): Promise<UserProfile> {
+  const response = await api.get('/api/profile');
+  return response.data.data;
+}
+
+export async function updateUserProfile(data: Partial<Omit<UserProfile, 'id' | 'email' | 'role' | 'created_at'>>): Promise<UserProfile> {
+  const response = await api.put('/api/profile', data);
+  return response.data.data;
+}
+
+export async function uploadUserAvatar(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append('avatar', file);
+  const response = await api.post('/api/profile/avatar', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data.data.avatar_url;
+}

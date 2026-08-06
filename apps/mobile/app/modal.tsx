@@ -1,35 +1,25 @@
 import { StatusBar } from 'expo-status-bar';
-import { Platform, StyleSheet } from 'react-native';
-
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+import { Platform, View, Text, Pressable } from 'react-native';
+import { Link } from 'expo-router';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 export default function ModalScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Modal</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/modal.tsx" />
+    <View className="flex-1 bg-gyg-bg items-center justify-center px-6">
+      <View className="w-20 h-20 rounded-full bg-gyg-light items-center justify-center mb-6">
+        <FontAwesome name="info" size={32} color="#000C3B" />
+      </View>
+      <Text className="font-heading text-2xl text-gyg-text mb-2">Modal</Text>
+      <Text className="font-body text-gyg-muted text-center mb-6">
+        This is a placeholder modal screen. Replace it with your own content.
+      </Text>
+      <Link href="/" asChild>
+        <Pressable className="bg-gyg-navy rounded-xl px-6 py-3.5 active:bg-black">
+          <Text className="font-body text-white font-semibold">Go back home</Text>
+        </Pressable>
+      </Link>
 
-      {/* Use a light status bar on iOS to account for the black space above the modal */}
       <StatusBar style={Platform.OS === 'ios' ? 'light' : 'auto'} />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
-});

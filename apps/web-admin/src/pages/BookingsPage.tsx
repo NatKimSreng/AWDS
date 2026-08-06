@@ -1,199 +1,270 @@
-import { useEffect, useState } from 'react';
-import { Search, Loader2, AlertCircle, Calendar, Users } from 'lucide-react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Calendar, Users, Eye } from 'lucide-react';
+import type { ColumnDef } from '@tanstack/react-table';
 
-import { getBookings, updateBookingStatus, type AdminBooking, type PaginatedResponse } from '../lib/api';
+import { useBookings, useBookingMutations } from '../hooks/useAdmin';
+import { useDebounce } from '../hooks/useDebounce';
+import { useToast } from '../hooks/useToast';
+import DataTable from '../components/DataTable';
 import StatusBadge from '../components/StatusBadge';
-import Pagination from '../components/Pagination';
+import ConfirmModal from '../components/ConfirmModal';
+import type { AdminBooking } from '../lib/api';
 
 const STATUS_OPTIONS = [
-  { value: '', label: 'All statuses' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'confirmed', label: 'Confirmed' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'cancelled', label: 'Cancelled' },
+ { value: '', label: 'All statuses' },
+ { value: 'pending', label: 'Pending' },
+ { value: 'confirmed', label: 'Confirmed' },
+ { value: 'completed', label: 'Completed' },
+ { value: 'cancelled', label: 'Cancelled' },
 ];
 
 export default function BookingsPage() {
-  const [bookings, setBookings] = useState<PaginatedResponse<AdminBooking> | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [status, setStatus] = useState('');
-  const [query, setQuery] = useState('');
-  const [page, setPage] = useState(1);
+ const [status, setStatus] = useState('');
+ const [query, setQuery] = useState('');
+ const [page, setPage] = useState(1);
+ const [confirmCancel, setConfirmCancel] = useState<{ id: number; ref: string } | null>(null);
+ const [cancelNote, setCancelNote] = useState('');
 
-  useEffect(() => {
-    loadBookings();
-  }, [status, query, page]);
+ const navigate = useNavigate();
+ const debouncedQuery = useDebounce(query, 350);
+ const { showToast } = useToast();
 
-  const loadBookings = async () => {
-    try {
-      setLoading(true);
-      const data = await getBookings(status || undefined, query || undefined, page);
-      setBookings(data);
-      setError(null);
-    } catch {
-      setError('Failed to load bookings.');
-    } finally {
-      setLoading(false);
-    }
-  };
+ const { data: bookings, isLoading, error, refetch } = useBookings(status || undefined, debouncedQuery || undefined, page);
+ const { updateStatus } = useBookingMutations();
 
-  const handleStatusChange = async (id: number, newStatus: 'confirmed' | 'completed' | 'cancelled') => {
-    try {
-      await updateBookingStatus(id, newStatus);
-      loadBookings();
-    } catch {
-      setError('Failed to update booking status.');
-    }
-  };
+ const isMutating = updateStatus.isPending;
 
-  const formatPrice = (value: number | string | undefined, currency: string) => {
-    if (value === undefined || value === null) return '—';
-    return `${currency} ${Number(value).toFixed(2)}`;
-  };
+ const handleStatusChange = async (
+ id: number,
+ newStatus: 'confirmed' | 'completed' | 'cancelled',
+ ref: string,
+ note?: string
+ ) => {
+ try {
+ await updateStatus.mutateAsync({ id, status: newStatus, note });
+ showToast(`Booking ${ref} marked as ${newStatus}`, 'success');
+ } catch {
+ showToast('Failed to update booking status', 'error');
+ }
+ };
 
-  const formatDate = (date: string | null) => {
-    if (!date) return '—';
-    return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  };
+ const formatPrice = (value: number | string | undefined, currency: string) => {
+ if (value === undefined || value === null) return '—';
+ return `${currency} ${Number(value).toFixed(2)}`;
+ };
 
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-gray" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setPage(1);
-            }}
-            placeholder="Search by ref, activity, or customer..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-gray/20 focus:border-angkor-orange focus:ring-1 focus:ring-angkor-orange outline-none"
-          />
-        </div>
-        <select
-          value={status}
-          onChange={(e) => {
-            setStatus(e.target.value);
-            setPage(1);
-          }}
-          className="px-4 py-2.5 rounded-xl border border-stone-gray/20 bg-white focus:border-angkor-orange focus:ring-1 focus:ring-angkor-orange outline-none"
-        >
-          {STATUS_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
-      </div>
+ const formatDate = (date: string | null) => {
+ if (!date) return '—';
+ return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+ };
 
-      {error && (
-        <div className="bg-error-red/10 text-error-red rounded-xl p-4 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
-          <p className="text-sm">{error}</p>
-        </div>
-      )}
+ const columns: ColumnDef<AdminBooking>[] = [
+ {
+ accessorKey: 'booking_ref',
+ header: 'Booking',
+ cell: ({ row }) => {
+ const booking = row.original;
+ return (
+ <div>
+ <p className="font-medium text-text-primary">{booking.booking_ref}</p>
+ <p className="text-xs text-text-secondary mt-1">{booking.activity?.title ?? '—'}</p>
+ <p className="text-xs text-text-secondary">{booking.provider?.business_name ?? '—'}</p>
+ </div>
+ );
+ },
+ },
+ {
+ accessorKey: 'customer.name',
+ header: 'Customer',
+ cell: ({ row }) => {
+ const booking = row.original;
+ return (
+ <div>
+ <p className="text-text-primary">{booking.customer?.name ?? 'Guest'}</p>
+ <p className="text-xs text-text-secondary">{booking.customer?.email ?? ''}</p>
+ </div>
+ );
+ },
+ },
+ {
+ accessorKey: 'booking_date',
+ header: 'Date & Travelers',
+ cell: ({ row }) => {
+ const booking = row.original;
+ return (
+ <div>
+ <div className="flex items-center gap-2 text-text-primary">
+ <Calendar className="w-3.5 h-3.5 text-text-secondary" />
+ <span>{formatDate(booking.booking_date)}</span>
+ {booking.booking_time && <span className="text-text-secondary">{booking.booking_time}</span>}
+ </div>
+ <div className="flex items-center gap-2 text-xs text-text-secondary mt-1">
+ <Users className="w-3.5 h-3.5" />
+ {booking.traveler_count} travelers
+ </div>
+ </div>
+ );
+ },
+ },
+ {
+ accessorKey: 'total_price',
+ header: 'Total',
+ cell: ({ row }) => {
+ const booking = row.original;
+ return (
+ <div>
+ <p className="text-text-primary">{formatPrice(booking.total_price, booking.currency)}</p>
+ <p className="text-xs text-text-secondary">Commission: {formatPrice(booking.commission_amount, booking.currency)}</p>
+ </div>
+ );
+ },
+ },
+ {
+ accessorKey: 'status',
+ header: 'Status',
+ cell: ({ row }) => <StatusBadge status={row.original.status} />,
+ },
+ {
+ id: 'actions',
+ header: '',
+ cell: ({ row }) => {
+ const booking = row.original;
+ return (
+ <div className="flex items-center justify-end gap-2">
+ <button
+ onClick={(e) => {
+ e.stopPropagation();
+ navigate(`/bookings/${booking.id}`);
+ }}
+ className="p-2 rounded-md text-text-secondary hover:bg-surface-elevated"
+ title="View"
+ >
+ <Eye className="w-4 h-4" />
+ </button>
+ {booking.status !== 'cancelled' && booking.status !== 'completed' && (
+ <>
+ {booking.status === 'pending' && (
+ <button
+ onClick={(e) => {
+ e.stopPropagation();
+ handleStatusChange(booking.id, 'confirmed', booking.booking_ref);
+ }}
+ disabled={isMutating}
+ className="px-3 py-1.5 rounded-md text-xs font-medium bg-success/10 text-success hover:bg-success/20 disabled:opacity-50"
+ >
+ Confirm
+ </button>
+ )}
+ {booking.status === 'confirmed' && (
+ <button
+ onClick={(e) => {
+ e.stopPropagation();
+ handleStatusChange(booking.id, 'completed', booking.booking_ref);
+ }}
+ disabled={isMutating}
+ className="px-3 py-1.5 rounded-md text-xs font-medium bg-accent/10 text-text-primary hover:bg-accent/20 disabled:opacity-50"
+ >
+ Complete
+ </button>
+ )}
+ <button
+ onClick={(e) => {
+ e.stopPropagation();
+ setConfirmCancel({ id: booking.id, ref: booking.booking_ref });
+ }}
+ disabled={isMutating}
+ className="px-3 py-1.5 rounded-md text-xs font-medium bg-error/10 text-error hover:bg-error/20 disabled:opacity-50"
+ >
+ Cancel
+ </button>
+ </>
+ )}
+ </div>
+ );
+ },
+ },
+ ];
 
-      {loading ? (
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 text-angkor-orange animate-spin" />
-        </div>
-      ) : (
-        <div className="bg-card-white rounded-xl shadow-sm border border-stone-gray/10 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-sand-bg text-xs uppercase text-stone-gray">
-                <tr>
-                  <th className="px-4 py-3 text-left font-medium">Booking</th>
-                  <th className="px-4 py-3 text-left font-medium">Customer</th>
-                  <th className="px-4 py-3 text-left font-medium">Date & Travelers</th>
-                  <th className="px-4 py-3 text-left font-medium">Total</th>
-                  <th className="px-4 py-3 text-left font-medium">Status</th>
-                  <th className="px-4 py-3 text-right font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-stone-gray/10">
-                {bookings?.data.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-stone-gray">
-                      No bookings found.
-                    </td>
-                  </tr>
-                ) : (
-                  bookings?.data.map((booking) => (
-                    <tr key={booking.id} className="hover:bg-stone-gray/5">
-                      <td className="px-4 py-3">
-                        <p className="font-medium text-stone-charcoal">{booking.booking_ref}</p>
-                        <p className="text-xs text-stone-gray mt-1">{booking.activity?.title ?? '—'}</p>
-                        <p className="text-xs text-stone-gray">{booking.provider?.business_name ?? '—'}</p>
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="text-stone-charcoal">{booking.customer?.name ?? 'Guest'}</p>
-                        <p className="text-xs text-stone-gray">{booking.customer?.email ?? ''}</p>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2 text-stone-charcoal">
-                          <Calendar className="w-3.5 h-3.5 text-stone-gray" />
-                          <span>{formatDate(booking.booking_date)}</span>
-                          {booking.booking_time && <span className="text-stone-gray">{booking.booking_time}</span>}
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-stone-gray mt-1">
-                          <Users className="w-3.5 h-3.5" />
-                          {booking.traveler_count} travelers
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-stone-charcoal">
-                        {formatPrice(booking.total_price, booking.currency)}
-                        <p className="text-xs text-stone-gray">Commission: {formatPrice(booking.commission_amount, booking.currency)}</p>
-                      </td>
-                      <td className="px-4 py-3">
-                        <StatusBadge status={booking.status} />
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        {booking.status !== 'cancelled' && booking.status !== 'completed' ? (
-                          <div className="flex items-center justify-end gap-2">
-                            {booking.status === 'pending' && (
-                              <button
-                                onClick={() => handleStatusChange(booking.id, 'confirmed')}
-                                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-success-green/10 text-success-green hover:bg-success-green/20"
-                              >
-                                Confirm
-                              </button>
-                            )}
-                            {booking.status === 'confirmed' && (
-                              <button
-                                onClick={() => handleStatusChange(booking.id, 'completed')}
-                                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-angkor-orange/10 text-angkor-orange hover:bg-angkor-orange/20"
-                              >
-                                Complete
-                              </button>
-                            )}
-                            <button
-                              onClick={() => {
-                                const note = prompt('Reason for cancellation (optional):') ?? undefined;
-                                updateBookingStatus(booking.id, 'cancelled', note).then(loadBookings).catch(() => setError('Failed to cancel booking.'));
-                              }}
-                              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-error-red/10 text-error-red hover:bg-error-red/20"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-stone-gray">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+ const emptyAction = query || status
+ ? { label: 'Clear filters', onClick: () => { setQuery(''); setStatus(''); setPage(1); } }
+ : undefined;
 
-      {bookings && (
-        <Pagination currentPage={bookings.current_page} lastPage={bookings.last_page} onPageChange={setPage} />
-      )}
-    </div>
-  );
+ return (
+ <div className="space-y-3">
+ <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+ <div className="relative flex-1 max-w-sm">
+ <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+ <input
+ type="text"
+ value={query}
+ onChange={(e) => {
+ setQuery(e.target.value);
+ setPage(1);
+ }}
+ placeholder="Search by ref, activity, or customer..."
+ className="w-full pl-10 pr-4 py-2.5 rounded-md border border-border focus:border-accent focus:ring-1 focus:ring-accent outline-none"
+ />
+ </div>
+ <select
+ value={status}
+ onChange={(e) => {
+ setStatus(e.target.value);
+ setPage(1);
+ }}
+ className="px-4 py-2.5 rounded-md border border-border bg-surface-raised text-text-primary focus:border-accent focus:ring-1 focus:ring-accent outline-none"
+ >
+ {STATUS_OPTIONS.map((opt) => (
+ <option key={opt.value} value={opt.value}>{opt.label}</option>
+ ))}
+ </select>
+ </div>
+
+ <DataTable
+ data={bookings?.data ?? []}
+ columns={columns}
+ isLoading={isLoading}
+ error={error}
+ onRetry={refetch}
+ emptyTitle="No bookings found"
+ emptyMessage={query ? 'Try a different search term or clear the filters.' : 'No bookings have been made yet.'}
+ emptyAction={emptyAction}
+ onRowClick={(booking) => navigate(`/bookings/${booking.id}`)}
+ getRowId={(booking) => String(booking.id)}
+ currentPage={bookings?.current_page}
+ lastPage={bookings?.last_page}
+ onPageChange={setPage}
+ skeletonColumns={6}
+ />
+
+ <ConfirmModal
+ isOpen={confirmCancel !== null}
+ title="Cancel booking"
+ message={`Are you sure you want to cancel booking ${confirmCancel?.ref}? A refund record will be created if applicable.`}
+ confirmLabel="Cancel booking"
+ variant="danger"
+ note={
+ confirmCancel
+ ? {
+ label: 'Reason for cancellation (optional)',
+ placeholder: 'e.g. Customer request',
+ value: cancelNote,
+ onChange: setCancelNote,
+ }
+ : undefined
+ }
+ onConfirm={() => {
+ if (!confirmCancel) return;
+ const note = cancelNote.trim() || undefined;
+ handleStatusChange(confirmCancel.id, 'cancelled', confirmCancel.ref, note);
+ setCancelNote('');
+ setConfirmCancel(null);
+ }}
+ onCancel={() => {
+ setCancelNote('');
+ setConfirmCancel(null);
+ }}
+ />
+ </div>
+ );
 }

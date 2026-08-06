@@ -1,28 +1,71 @@
 @import "tailwindcss";
 
 @theme {
-  --color-angkor-orange: #C8530A;
-  --color-angkor-orange-dark: #9C4108;
-  --color-angkor-orange-light: #F3D9C4;
-  --color-stone-charcoal: #2B2622;
-  --color-stone-gray: #6B635C;
-  --color-sand-bg: #FBF7F2;
-  --color-card-white: #FFFFFF;
-  --color-success-green: #2F7D4F;
-  --color-error-red: #B3261E;
-  --color-khmer-gold: #D4AF37;
+ --color-surface: #111111;
+ --color-surface-raised: #1a1a1a;
+ --color-surface-elevated: #222222;
+ --color-border: #2a2a2a;
+ --color-text-primary: #ffffff;
+ --color-text-secondary: #9ca3af;
+ --color-text-muted: #6b7280;
+ --color-accent: #ffffff;
+ --color-accent-inverse: #111111;
+ --color-success: #22c55e;
+ --color-error: #ef4444;
+ --color-warning: #f59e0b;
 
-  --font-heading: 'Playfair Display', Georgia, serif;
-  --font-body: 'Inter', system-ui, sans-serif;
-  --font-khmer: 'Noto Sans Khmer', sans-serif;
+ --font-heading: 'Inter', system-ui, sans-serif;
+ --font-body: 'Inter', system-ui, sans-serif;
 }
 
 body {
-  font-family: var(--font-body);
-  background-color: var(--color-sand-bg);
-  color: var(--color-stone-charcoal);
+ font-family: var(--font-body);
+ background-color: var(--color-surface);
+ color: var(--color-text-primary);
+}
+
+html[data-theme="light"] {
+ --color-surface: #ffffff;
+ --color-surface-raised: #f8f9fa;
+ --color-surface-elevated: #ffffff;
+ --color-border: #e5e7eb;
+ --color-text-primary: #111111;
+ --color-text-secondary: #6b7280;
+ --color-text-muted: #9ca3af;
+ --color-accent: #111111;
+ --color-accent-inverse: #ffffff;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading);
+ font-family: var(--font-heading);
+}
+
+@keyframes toast-in {
+ from {
+ opacity: 0;
+ transform: translateY(8px);
+ }
+ to {
+ opacity: 1;
+ transform: translateY(0);
+ }
+}
+
+.toast-enter {
+ animation: toast-in 200ms ease-out;
+}
+
+.skeleton-shimmer {
+ background: linear-gradient(90deg, #1a1a1a 0%, #222222 50%, #1a1a1a 100%);
+ background-size: 200% 100%;
+ animation: skeleton-shimmer 1.5s infinite;
+}
+
+@keyframes skeleton-shimmer {
+ 0% {
+ background-position: 200% 0;
+ }
+ 100% {
+ background-position: -200% 0;
+ }
 }

@@ -40,7 +40,7 @@ export default function PhotoLightbox({
   }, [onClose, goNext, goPrev]);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/95 flex flex-col">
+    <div className="fixed inset-0 z-[110] bg-black/95 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3">
         <span className="text-white text-sm">

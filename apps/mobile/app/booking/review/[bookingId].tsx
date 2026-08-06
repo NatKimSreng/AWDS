@@ -79,21 +79,21 @@ export default function ReviewScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-bg justify-center items-center">
-        <ActivityIndicator color="#C8530A" />
+      <SafeAreaView className="flex-1 bg-gyg-bg justify-center items-center">
+        <ActivityIndicator color="#000C3B" />
       </SafeAreaView>
     );
   }
 
   if (eligibility && !eligibility.can_review) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-bg justify-center items-center px-6">
-        <FontAwesome name="lock" size={48} color="#6B635C" />
-        <Text className="font-heading text-lg text-stone-charcoal mt-4 text-center">
+      <SafeAreaView className="flex-1 bg-gyg-bg justify-center items-center px-6">
+        <FontAwesome name="lock" size={48} color="#6B7280" />
+        <Text className="font-heading text-lg text-gyg-text mt-4 text-center">
           {eligibility.reason ?? 'Unable to leave a review'}
         </Text>
         <Pressable onPress={() => router.back()} className="mt-6">
-          <Text className="font-body text-angkor-orange font-semibold">Go back</Text>
+          <Text className="font-body text-gyg-navy font-semibold">Go back</Text>
         </Pressable>
       </SafeAreaView>
     );
@@ -102,86 +102,94 @@ export default function ReviewScreen() {
   const activityTitle = eligibility?.activity?.title ?? 'this activity';
 
   return (
-    <SafeAreaView className="flex-1 bg-sand-bg">
+    <SafeAreaView className="flex-1 bg-gyg-bg">
+      <View className="px-5 pt-4 pb-3 bg-white border-b border-gyg-border">
+        <View className="flex-row items-center">
+          <Pressable onPress={() => router.back()} className="w-10 h-10 items-center justify-center -ml-2 rounded-full active:bg-gyg-bg">
+            <FontAwesome name="arrow-left" size={20} color="#000C3B" />
+          </Pressable>
+          <View className="ml-2 flex-1">
+            <Text className="font-heading text-xl text-gyg-text">Write a review</Text>
+            <Text className="font-body text-gyg-muted text-sm" numberOfLines={1}>{activityTitle}</Text>
+          </View>
+        </View>
+      </View>
+
       <ScrollView className="flex-1 p-5">
-        <Text className="font-heading text-2xl text-stone-charcoal mb-1">
-          Rate {activityTitle}
-        </Text>
-        <Text className="font-body text-stone-gray mb-6">
-          Share your experience with other travelers.
-        </Text>
+        <Text className="font-heading text-2xl text-gyg-text mb-1">How was {activityTitle}?</Text>
+        <Text className="font-body text-gyg-muted mb-6">Share your experience with other travelers.</Text>
 
         <View className="flex-row mb-6">
           {[1, 2, 3, 4, 5].map((star) => (
             <Pressable key={star} onPress={() => setRating(star)} className="mr-3">
               <FontAwesome
                 name={star <= rating ? 'star' : 'star-o'}
-                size={32}
-                color={star <= rating ? '#D4AF37' : '#9CA3AF'}
+                size={36}
+                color={star <= rating ? '#D4AF37' : '#D1D5DB'}
               />
             </Pressable>
           ))}
         </View>
 
-        <Text className="font-body text-stone-charcoal mb-2">Review</Text>
-        <TextInput
-          value={comment}
-          onChangeText={setComment}
-          placeholder="What did you like? What could be better?"
-          multiline
-          numberOfLines={6}
-          textAlignVertical="top"
-          className="bg-white rounded-xl p-4 font-body text-stone-charcoal mb-6 border border-stone-gray/20"
-          style={{ minHeight: 120 }}
-        />
+        <View className="bg-white rounded-2xl p-5 shadow-card border border-gyg-border mb-6">
+          <Text className="font-body text-gyg-text font-semibold mb-2">Review</Text>
+          <TextInput
+            value={comment}
+            onChangeText={setComment}
+            placeholder="What did you like? What could be better?"
+            multiline
+            numberOfLines={6}
+            textAlignVertical="top"
+            className="bg-gyg-bg rounded-xl p-4 font-body text-gyg-text min-h-[120px] border border-gyg-border"
+          />
+        </View>
 
-        <Text className="font-body text-stone-charcoal mb-2">
-          Photos ({images.length}/5)
-        </Text>
-        <Pressable
-          onPress={pickImages}
-          className="bg-white border border-dashed border-stone-gray/40 rounded-xl p-4 items-center mb-4"
-        >
-          <FontAwesome name="camera" size={24} color="#6B635C" />
-          <Text className="font-body text-stone-gray mt-2">Add photos</Text>
-        </Pressable>
-
-        {images.length > 0 && (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            className="mb-6"
+        <View className="bg-white rounded-2xl p-5 shadow-card border border-gyg-border mb-6">
+          <Text className="font-body text-gyg-text font-semibold mb-3">Photos ({images.length}/5)</Text>
+          <Pressable
+            onPress={pickImages}
+            className="bg-gyg-bg border border-dashed border-gyg-border rounded-xl p-4 items-center mb-4 active:bg-gyg-light"
           >
-            {images.map((image, index) => (
-              <View key={index} className="relative mr-3">
-                <Image
-                  source={{ uri: image.uri }}
-                  className="w-24 h-24 rounded-xl"
-                />
-                <Pressable
-                  onPress={() => removeImage(index)}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-stone-charcoal rounded-full items-center justify-center"
-                >
-                  <FontAwesome name="times" size={12} color="#FFFFFF" />
-                </Pressable>
-              </View>
-            ))}
-          </ScrollView>
-        )}
+            <FontAwesome name="camera" size={24} color="#6B7280" />
+            <Text className="font-body text-gyg-muted mt-2">Add photos</Text>
+          </Pressable>
+
+          {images.length > 0 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+            >
+              {images.map((image, index) => (
+                <View key={index} className="relative mr-3">
+                  <Image
+                    source={{ uri: image.uri }}
+                    className="w-24 h-24 rounded-xl"
+                  />
+                  <Pressable
+                    onPress={() => removeImage(index)}
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-gyg-text rounded-full items-center justify-center"
+                  >
+                    <FontAwesome name="times" size={12} color="#FFFFFF" />
+                  </Pressable>
+                </View>
+              ))}
+            </ScrollView>
+          )}
+        </View>
 
         <Pressable
           onPress={() => mutation.mutate()}
           disabled={rating === 0 || mutation.isPending}
           className={`rounded-xl py-4 items-center ${
             rating === 0 || mutation.isPending
-              ? 'bg-stone-gray/40'
-              : 'bg-angkor-orange active:bg-angkor-orange-dark'
+              ? 'bg-gyg-border'
+              : 'bg-gyg-navy active:bg-black'
           }`}
         >
           {mutation.isPending ? (
             <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <Text className="font-body text-white font-semibold">Submit Review</Text>
+            <Text className="font-body text-white font-semibold text-base">Submit Review</Text>
           )}
         </Pressable>
       </ScrollView>

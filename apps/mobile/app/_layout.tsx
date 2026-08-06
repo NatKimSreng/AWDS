@@ -27,6 +27,17 @@ export const unstable_settings = {
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
+const GYG_BG = '#F9FAFB';
+
+const PROTECTED_SEGMENTS = new Set([
+  'bookings',
+  'messages',
+  'profile',
+  'favorites',
+  'support',
+  'booking',
+]);
+
 function useProtectedRoute() {
   const router = useRouter();
   const segments = useSegments();
@@ -51,8 +62,10 @@ function useProtectedRoute() {
     if (!hasRestored || isLoading) return;
 
     const inAuthGroup = segments[0] === '(auth)';
+    const currentSegment = segments[0] ?? '';
+    const isProtected = PROTECTED_SEGMENTS.has(currentSegment) || inAuthGroup;
 
-    if (!token && !inAuthGroup) {
+    if (!token && isProtected) {
       router.replace('/login');
     } else if (token && inAuthGroup) {
       router.replace('/(tabs)');
@@ -119,22 +132,33 @@ function RootLayoutNav() {
     return null;
   }
 
+  const stackOptions = {
+    headerShown: false,
+    contentStyle: { backgroundColor: GYG_BG },
+    animation: 'slide_from_right' as const,
+    animationDuration: 220,
+  };
+
   return (
     <>
       <SettingsLoader />
       <QueryClientProvider client={queryClient}>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="category/[slug]" options={{ headerShown: false }} />
-            <Stack.Screen name="activity/[slug]" options={{ headerShown: false }} />
-            <Stack.Screen name="activity-reviews/[slug]" options={{ headerShown: false }} />
-            <Stack.Screen name="provider/[id]" options={{ headerShown: false }} />
-            <Stack.Screen name="favorites" options={{ headerShown: false }} />
-            <Stack.Screen name="support" options={{ headerShown: false }} />
-            <Stack.Screen name="support/[id]" options={{ headerShown: false }} />
-            <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+          <Stack screenOptions={stackOptions}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="category/[slug]" />
+            <Stack.Screen name="activity/[slug]" />
+            <Stack.Screen name="activity-reviews/[slug]" />
+            <Stack.Screen name="provider/[id]" />
+            <Stack.Screen name="favorites" />
+            <Stack.Screen name="support" />
+            <Stack.Screen name="support/[id]" />
+            <Stack.Screen
+              name="profile/edit"
+              options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+            />
+            <Stack.Screen name="modal" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
           </Stack>
         </ThemeProvider>
       </QueryClientProvider>

@@ -12,18 +12,18 @@ export function CurrencyToggle() {
     : (['USD', 'KHR'] as const);
 
   return (
-    <View className="flex-row bg-white rounded-xl p-1 shadow-sm">
+    <View className="flex-row bg-gyg-bg rounded-xl p-1 shadow-soft">
       {codes.map((code) => {
         const active = currency === code;
         return (
           <Pressable
             key={code}
             onPress={() => setCurrency(code as 'USD' | 'KHR')}
-            className={`flex-1 rounded-lg py-2 items-center ${active ? 'bg-angkor-orange' : ''}`}
+            className={`flex-1 rounded-lg py-2 items-center ${active ? 'bg-gyg-navy' : ''}`}
           >
             <Text
               className={`font-body font-semibold ${
-                active ? 'text-white' : 'text-stone-charcoal'
+                active ? 'text-white' : 'text-gyg-text'
               }`}
             >
               {code}

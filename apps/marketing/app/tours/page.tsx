@@ -1,47 +1,25 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import type { Metadata } from "next";
-import { fetchActivities, fetchCategories, fetchCities } from "@/lib/api";
+import { fetchActivities } from "@/lib/api";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import TourCard from "@/components/TourCard";
+import TourResultsClient from "@/components/TourResultsClient";
 import TourFilters from "@/components/TourFilters";
-import { Search, SlidersHorizontal, MapPin, Tag, ChevronRight } from "lucide-react";
+import FilterSidebar from "@/components/FilterSidebar";
+import SearchBar from "@/components/SearchBar";
+import FilterChips from "@/components/FilterChips";
+import SectionHeading from "@/components/SectionHeading";
+import { FadeIn } from "@/components/MotionWrapper";
+import { X } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Tours in Siem Reap — AngkorWatDayTour",
+  title: "Tours & Activities in Cambodia — AngkorWatDayTour",
   description:
-    "Browse sunrise Angkor Wat tours, local guides, transport, photography, and multi-day experiences in Siem Reap.",
+    "Browse sunrise Angkor Wat tours, local guides, transport, photography, and multi-day experiences in Cambodia.",
 };
 
-interface Activity {
-  id: number;
-  slug: string;
-  title: string;
-  base_price_usd: string;
-  duration_minutes: number;
-  min_group: number;
-  max_group: number;
-  avg_rating: number;
-  reviews_count: number;
-  is_featured: boolean;
-  is_instant_book: boolean;
-  category: { name: string; slug: string } | null;
-  city: { name: string; slug: string } | null;
-  provider: { business_name: string } | null;
-  hero_image: string | null;
-}
-
-interface Category {
-  id: number;
-  name: string;
-  slug: string;
-}
-
-interface City {
-  id: number;
-  name: string;
-  slug: string;
-}
+import type { Activity } from "@/lib/types";
 
 export default async function ToursPage({
   searchParams,
@@ -52,137 +30,108 @@ export default async function ToursPage({
   const query = typeof params.q === "string" ? params.q : "";
   const categorySlug = typeof params.category === "string" ? params.category : "";
   const citySlug = typeof params.city === "string" ? params.city : "";
+  const serviceTypeSlug = typeof params.service_type === "string" ? params.service_type : "";
+  const transportModeSlug = typeof params.transport_mode === "string" ? params.transport_mode : "";
   const sort = typeof params.sort === "string" ? params.sort : "";
   const duration = typeof params.duration === "string" ? params.duration : "";
   const minPrice = typeof params.min_price === "string" ? params.min_price : "";
   const maxPrice = typeof params.max_price === "string" ? params.max_price : "";
   const instantBook = params.instant_book === "1" ? "1" : "";
+  const date = typeof params.date === "string" ? params.date : "";
+  const participants = typeof params.participants === "string" ? params.participants : "";
 
   const apiParams: Record<string, string> = { per_page: "24" };
   if (query) apiParams.query = query;
   if (categorySlug) apiParams.category = categorySlug;
   if (citySlug) apiParams.city = citySlug;
+  if (serviceTypeSlug) apiParams.service_type = serviceTypeSlug;
+  if (transportModeSlug) apiParams.transport_mode = transportModeSlug;
   if (sort) apiParams.sort = sort;
   if (duration) apiParams.duration = duration;
   if (minPrice) apiParams.min_price = minPrice;
   if (maxPrice) apiParams.max_price = maxPrice;
   if (instantBook) apiParams.instant_book = instantBook;
+  if (date) apiParams.date = date;
+  if (participants) apiParams.group_size = participants;
 
   const activities = (await fetchActivities(apiParams)) as Activity[];
-  const categories = (await fetchCategories()) as Category[];
-  const cities = (await fetchCities()) as City[];
+
+  const hasFilters = query || date || participants || serviceTypeSlug || transportModeSlug;
+  const activeFilterChips = [
+    query ? { label: `Search: ${query}`, href: "/tours" } : null,
+    date ? { label: `Date: ${date}`, href: "/tours" } : null,
+    participants ? { label: `${participants} participant${participants === "1" ? "" : "s"}`, href: "/tours" } : null,
+    serviceTypeSlug ? { label: `Service: ${serviceTypeSlug.replace(/-/g, " ")}`, href: "/tours" } : null,
+    transportModeSlug ? { label: `Transport: ${transportModeSlug.replace(/-/g, " ")}`, href: "/tours" } : null,
+  ].filter(Boolean) as { label: string; href: string }[];
+
+  const heading = query
+    ? `Results for "${query}"`
+    : citySlug
+      ? `Tours in ${citySlug.replace(/-/g, " ")}`
+      : categorySlug
+        ? `${categorySlug.replace(/-/g, " ")} tours`
+        : serviceTypeSlug
+          ? `${serviceTypeSlug.replace(/-/g, " ")} services`
+          : transportModeSlug
+            ? `Tours by ${transportModeSlug.replace(/-/g, " ")}`
+            : "Tours & activities";
+  const subtitle = query ? "" : "Most popular things to do in Cambodia";
 
   return (
     <div className="flex flex-col flex-1 bg-sand-bg">
       <Header />
 
-      {/* Sub-hero */}
-      <section className="bg-white border-b border-gyg-border py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <nav className="flex items-center gap-2 text-sm text-gyg-muted mb-3">
-            <Link href="/" className="hover:text-angkor-orange">Home</Link>
-            <ChevronRight className="w-4 h-4" />
-            <span className="text-gyg-text font-medium">Tours</span>
-          </nav>
-          <h1 className="text-3xl md:text-4xl font-bold text-gyg-navy mb-2">
-            {query ? `Results for "${query}"` : "Siem Reap tours &amp; experiences"}
-          </h1>
-          <p className="text-gyg-muted">
-            {activities.length} {activities.length === 1 ? "experience" : "experiences"} available
-          </p>
+      <section className="bg-white border-b border-gyg-border py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-4">
+          <Suspense fallback={<div className="h-14 bg-gray-100 rounded-full animate-pulse" />}>
+            <SearchBar initialQuery={query} />
+          </Suspense>
+          <Suspense fallback={<div className="h-10 bg-gray-100 rounded-full animate-pulse" />}>
+            <FilterChips />
+          </Suspense>
         </div>
       </section>
 
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-8 w-full">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar filters */}
-          <aside className="lg:w-64 shrink-0 hidden lg:block">
-            <div className="bg-white rounded-2xl border border-gyg-border p-5 sticky top-24">
-              <div className="flex items-center gap-2 mb-5">
-                <SlidersHorizontal className="w-5 h-5 text-angkor-orange" />
-                <span className="font-bold text-gyg-navy">Filters</span>
+      <main className="flex-1 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-8 w-full">
+        <FadeIn>
+          <FilterSidebar filterContent={<TourFilters variant="sidebar" />}>
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                <div className="text-sm text-gyg-muted">
+                  {activities.length} {activities.length === 1 ? "result" : "results"}
+                  {query ? ` for "${query}"` : ""}
+                </div>
+                <div className="lg:hidden">
+                  <TourFilters />
+                </div>
               </div>
 
-              <div className="mb-6">
-                <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-gyg-text">
-                  <Tag className="w-4 h-4" /> Categories
-                </div>
-                <ul className="space-y-2">
-                  <li>
+              {hasFilters && activeFilterChips.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2 mb-5">
+                  {activeFilterChips.map((chip) => (
                     <Link
-                      href="/tours"
-                      className={`text-sm ${!categorySlug ? "font-semibold text-angkor-orange" : "text-gyg-muted hover:text-angkor-orange"}`}
+                      key={chip.label}
+                      href={chip.href}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gyg-navy text-white text-xs font-medium hover:bg-black transition"
                     >
-                      All categories
+                      {chip.label}
+                      <X className="w-3 h-3" />
                     </Link>
-                  </li>
-                  {categories.map((category) => (
-                    <li key={category.id}>
-                      <Link
-                        href={`/category/${category.slug}`}
-                        className={`text-sm ${categorySlug === category.slug ? "font-semibold text-angkor-orange" : "text-gyg-muted hover:text-angkor-orange"}`}
-                      >
-                        {category.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-gyg-text">
-                  <MapPin className="w-4 h-4" /> Destinations
-                </div>
-                <ul className="space-y-2">
-                  <li>
-                    <Link
-                      href="/tours"
-                      className={`text-sm ${!citySlug ? "font-semibold text-angkor-orange" : "text-gyg-muted hover:text-angkor-orange"}`}
-                    >
-                      All destinations
-                    </Link>
-                  </li>
-                  {cities.map((city) => (
-                    <li key={city.id}>
-                      <Link
-                        href={`/tours?city=${city.slug}`}
-                        className={`text-sm ${citySlug === city.slug ? "font-semibold text-angkor-orange" : "text-gyg-muted hover:text-angkor-orange"}`}
-                      >
-                        {city.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </aside>
-
-          {/* Results */}
-          <div className="flex-1">
-            <TourFilters />
-
-            <div className="mt-6">
-              {activities.length === 0 ? (
-                <div className="bg-white rounded-2xl border border-gyg-border p-12 text-center">
-                  <Search className="w-12 h-12 text-gyg-muted mx-auto mb-4" />
-                  <p className="text-gyg-muted">No tours match your search.</p>
-                  <Link
-                    href="/tours"
-                    className="inline-block mt-4 text-angkor-orange font-semibold hover:underline"
-                  >
-                    Clear filters
-                  </Link>
-                </div>
-              ) : (
-                <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {activities.map((activity) => (
-                    <TourCard key={activity.id} {...activity} />
                   ))}
                 </div>
               )}
+
+              <SectionHeading title={heading} subtitle={subtitle} />
+
+              <TourResultsClient
+                activities={activities}
+                heading={heading}
+                subtitle={subtitle}
+              />
             </div>
-          </div>
-        </div>
+          </FilterSidebar>
+        </FadeIn>
       </main>
 
       <Footer />

@@ -161,7 +161,8 @@ class ProviderOnboardingApiTest extends TestCase
         $user = User::factory()->asCustomer()->create();
         Provider::factory()->create([
             'user_id' => $user->id,
-            'business_name' => '',
+            'business_name' => 'Valid Name',
+            'slug' => 'valid-name',
             'id_document_url' => null,
         ]);
         $token = $user->createToken('test')->plainTextToken;
@@ -169,7 +170,7 @@ class ProviderOnboardingApiTest extends TestCase
         $this->withHeader('Authorization', 'Bearer '.$token)
             ->postJson(route('provider.onboarding.submit'))
             ->assertStatus(422)
-            ->assertJsonPath('errors.business_name', ['Business name is required.']);
+            ->assertJsonPath('errors.id_document', ['ID document is required.']);
     }
 
     public function test_unauthenticated_requests_are_rejected(): void

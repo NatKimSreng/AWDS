@@ -13,6 +13,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { fetchAiConversations, type AiConversation } from '@/lib/aiChatApi';
 import { EmptyState } from '@/components/EmptyState';
+import { ErrorState } from '@/components/ErrorState';
 
 function ConversationItem({ conversation }: { conversation: AiConversation }) {
   const isEscalated = conversation.status === 'escalated';
@@ -20,26 +21,32 @@ function ConversationItem({ conversation }: { conversation: AiConversation }) {
   return (
     <Pressable
       onPress={() => router.push(`/support/${conversation.id}` as never)}
-      className="bg-white rounded-2xl p-4 mb-3 shadow-sm active:bg-stone-gray/10"
+      className="bg-white rounded-2xl p-4 mb-3 shadow-card border border-gyg-border active:bg-gyg-bg"
     >
       <View className="flex-row justify-between items-start">
         <View className="flex-1 pr-3">
-          <Text className="font-heading text-base text-stone-charcoal mb-1" numberOfLines={1}>
+          <Text className="font-heading text-base text-gyg-text mb-1" numberOfLines={1}>
             {conversation.title ?? 'Support chat'}
           </Text>
-          <Text className="font-body text-stone-gray text-sm">
-            {conversation.messages_count} message{conversation.messages_count === 1 ? '' : 's'}
-          </Text>
+          <View className="flex-row items-center">
+            <FontAwesome name="comments" size={12} color="#6B7280" />
+            <Text className="font-body text-gyg-muted text-sm ml-1.5">
+              {conversation.messages_count} message{conversation.messages_count === 1 ? '' : 's'}
+            </Text>
+          </View>
         </View>
         {isEscalated && (
-          <View className="bg-angkor-orange/10 rounded-full px-2.5 py-1">
-            <Text className="font-body text-xs text-angkor-orange font-semibold">Escalated</Text>
+          <View className="bg-amber-100 rounded-full px-2.5 py-1">
+            <Text className="font-body text-xs text-amber-800 font-semibold">Escalated</Text>
           </View>
         )}
       </View>
-      <Text className="font-body text-stone-gray text-xs mt-2">
-        {new Date(conversation.updated_at).toLocaleDateString()}
-      </Text>
+      <View className="flex-row items-center mt-2">
+        <FontAwesome name="clock-o" size={12} color="#9CA3AF" />
+        <Text className="font-body text-gyg-muted text-xs ml-1.5">
+          {new Date(conversation.updated_at).toLocaleDateString()}
+        </Text>
+      </View>
     </Pressable>
   );
 }
@@ -52,43 +59,49 @@ export default function SupportScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-bg justify-center items-center">
-        <ActivityIndicator color="#C8530A" />
+      <SafeAreaView className="flex-1 bg-gyg-bg justify-center items-center">
+        <ActivityIndicator color="#000C3B" />
       </SafeAreaView>
     );
   }
 
   if (error) {
     return (
-      <SafeAreaView className="flex-1 bg-sand-bg px-6">
-        <EmptyState
-          icon="exclamation-circle"
+      <SafeAreaView className="flex-1 bg-gyg-bg px-4">
+        <View className="pt-4 pb-2">
+          <Text className="font-heading text-2xl text-gyg-text">Support</Text>
+        </View>
+        <ErrorState
           title="Could not load support chats"
-          subtitle="Pull down to retry or check your connection."
+          error={error}
+          onRetry={() => refetch()}
         />
-        <Pressable onPress={() => refetch()} className="mt-4 self-center">
-          <Text className="font-body text-angkor-orange font-semibold">Try again</Text>
-        </Pressable>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-sand-bg">
-      <View className="px-5 pt-4 pb-2">
+    <SafeAreaView className="flex-1 bg-gyg-bg">
+      <View className="px-4 pt-4 pb-2">
         <View className="flex-row items-center mb-4">
-          <Pressable onPress={() => router.back()} className="mr-3">
-            <FontAwesome name="arrow-left" size={22} color="#2B2622" />
+          <Pressable
+            onPress={() => router.back()}
+            className="w-10 h-10 items-center justify-center -ml-2 rounded-full active:bg-gyg-light mr-2"
+          >
+            <FontAwesome name="arrow-left" size={20} color="#000C3B" />
           </Pressable>
-          <Text className="font-heading text-xl text-stone-charcoal">Support</Text>
+          <View>
+            <Text className="font-heading text-2xl text-gyg-text">Support</Text>
+            <Text className="font-body text-sm text-gyg-muted">Get help from AI or a human agent</Text>
+          </View>
         </View>
 
         <Pressable
           onPress={() => router.push('/support/new' as never)}
-          className="bg-angkor-orange rounded-2xl p-4 flex-row items-center justify-center active:bg-angkor-orange-dark mb-2"
+          className="bg-gyg-navy rounded-2xl p-4 flex-row items-center justify-center active:bg-black shadow-card mb-2"
         >
-          <FontAwesome name="plus" size={16} color="#FFFFFF" className="mr-2" />
-          <Text className="font-body text-white font-semibold ml-2">Start new chat</Text>
+          <FontAwesome name="plus" size={16} color="#FFFFFF" style={{ marginRight: 8 }} />
+          <Text className="font-body text-white font-semibold">Start new chat</Text>
         </Pressable>
       </View>
 
@@ -98,14 +111,16 @@ export default function SupportScreen() {
         renderItem={({ item }) => <ConversationItem conversation={item} />}
         contentContainerClassName="px-4 pb-6"
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor="#C8530A" />
+          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor="#000C3B" />
         }
         ListEmptyComponent={
-          <EmptyState
-            icon="comments-o"
-            title="No support chats yet"
-            subtitle="Start a new chat to ask about bookings, tours, or account help."
-          />
+          <View className="py-12">
+            <EmptyState
+              icon="comments-o"
+              title="No support chats yet"
+              subtitle="Start a new chat to ask about bookings, tours, or account help."
+            />
+          </View>
         }
       />
     </SafeAreaView>
